@@ -1,0 +1,220 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    /* Nutresa Corporate Brand Theme - Light Mode */
+    --background: 0 0% 97%;
+    /* #F8F8F8 - Crema claro */
+    --foreground: 0 0% 20%;
+    /* #333333 - Gris oscuro */
+
+    --card: 0 0% 100%;
+    /* Blanco puro */
+    --card-foreground: 0 0% 20%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 20%;
+
+    --primary: 152 100% 33%;
+    /* Verde Nutresa #00A859 */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 152 100% 21%;
+    /* Verde Oscuro #006837 */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 84 65% 59%;
+    /* Verde Claro #7FD13B */
+    --accent-foreground: 0 0% 20%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 152 100% 33%;
+
+    --radius: 0.75rem;
+
+    /* Nutresa Corporate gradients */
+    --gradient-corporate: linear-gradient(135deg, hsl(152, 100%, 21%), hsl(152, 100%, 33%));
+    --gradient-neutral: linear-gradient(180deg, hsl(0, 0%, 97%), hsl(0, 0%, 100%));
+    --gradient-hero: linear-gradient(135deg, hsl(152, 100%, 21%) 0%, hsl(152, 100%, 27%) 50%, hsl(152, 100%, 33%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(152, 100%, 33%), hsl(84, 65%, 59%));
+
+    /* Shadows */
+    --shadow-soft: 0 2px 8px -2px hsl(0 0% 0% / 0.08);
+    --shadow-medium: 0 4px 16px -4px hsl(0 0% 0% / 0.12);
+    --shadow-strong: 0 8px 32px -8px hsl(0 0% 0% / 0.16);
+
+    /* Animations */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .dark {
+    /* Dark mode - Corporate theme */
+    --background: 240 12% 10%;
+    --foreground: 240 5% 95%;
+
+    --card: 240 10% 14%;
+    --card-foreground: 240 5% 95%;
+
+    --popover: 240 10% 14%;
+    --popover-foreground: 240 5% 95%;
+
+    --primary: 152 100% 25%;
+    /* Verde Nutresa ajustado para dark mode */
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 6% 35%;
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 240 8% 20%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 152 100% 25%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 8% 25%;
+    --input: 240 8% 25%;
+    --ring: 152 100% 25%;
+
+    --gradient-corporate: linear-gradient(135deg, hsl(152, 100%, 25%), hsl(152, 100%, 35%));
+    --gradient-neutral: linear-gradient(180deg, hsl(240, 12%, 10%), hsl(240, 10%, 14%));
+    --gradient-hero: linear-gradient(135deg, hsl(240, 12%, 10%) 0%, hsl(152, 100%, 25%) 50%, hsl(152, 100%, 35%) 100%);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .gradient-corporate {
+    background: var(--gradient-corporate);
+  }
+
+  .gradient-neutral {
+    background: var(--gradient-neutral);
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+
+  .shadow-strong {
+    box-shadow: var(--shadow-strong);
+  }
+
+  .transition-smooth {
+    transition: var(--transition-smooth);
+  }
+
+  .transition-bounce {
+    transition: var(--transition-bounce);
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 10px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary));
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
