@@ -27,7 +27,8 @@ export const NAME_SEARCH_STORES = [
     'mundohuevo',
     'farmatodo',
     'mercaldas',
-    'supermu'
+    'supermu',
+    'rappi'
 ];
 
 /**

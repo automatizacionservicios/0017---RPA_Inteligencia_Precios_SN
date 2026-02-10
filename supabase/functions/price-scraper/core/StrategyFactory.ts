@@ -3,6 +3,7 @@ import { FarmatodoStrategy } from "../strategies/FarmatodoStrategy.ts";
 import { VtexStrategy } from "../strategies/VtexStrategy.ts";
 import { CheerioStrategy } from "../strategies/CheerioStrategy.ts";
 import { InstaleapStrategy } from "../strategies/InstaleapStrategy.ts";
+import { RappiStrategy } from "../strategies/RappiStrategy.ts";
 import { Store } from "../interfaces/IProduct.ts";
 
 export class StrategyFactory {
@@ -104,6 +105,10 @@ export class StrategyFactory {
                 url: '.product-collection__title a',
                 image: '[data-master]'
             }
+        },
+        rappi: {
+            scrapeMethod: 'rappi',
+            name: 'RAPPI'
         }
     };
 
@@ -122,6 +127,8 @@ export class StrategyFactory {
                 return new FarmatodoStrategy();
             case 'instaleap':
                 return new InstaleapStrategy(config.domain, config.name);
+            case 'rappi':
+                return new RappiStrategy(config.name);
             default:
                 return null;
         }

@@ -24,6 +24,7 @@ export const STORE_BRANDING: Record<string, StoreBrand> = {
     makro: { icon: '/stores/makro.png', color: '#E31E24', name: 'Makro', url: 'https://makro.com.co' },
     mercaldas: { icon: '/stores/mercaldas.png', color: '#008C45', name: 'Mercaldas', url: 'https://www.mercaldas.com' },
     supermu: { icon: '/stores/supermu.png', color: '#E30613', name: 'Super Mu', url: 'https://supermu.com' },
+    rappi: { icon: '/stores/rappi.png', color: '#FF441F', name: 'Rappi', url: 'https://rappi.com.co' },
 };
 
 export const getStoreBrand = (storeName: string): StoreBrand => {
@@ -51,6 +52,7 @@ export const getStoreBrand = (storeName: string): StoreBrand => {
 
     if (normalized.includes('mercaldas')) return STORE_BRANDING.mercaldas;
     if (normalized.includes('super mu') || normalized.includes('supermu')) return STORE_BRANDING.supermu;
+    if (normalized.includes('rappi')) return STORE_BRANDING.rappi;
 
     return { icon: null, color: '#A8A29E', name: storeName };
 };
