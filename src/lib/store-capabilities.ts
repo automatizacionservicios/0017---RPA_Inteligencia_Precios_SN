@@ -10,7 +10,7 @@ export const NO_EAN_STORES = [
     'makro'         // Instaleap - Name only according to user
 ];
 
-// Stores that support name-based search (All 16 stores)
+// Stores that support name-based search (All 17 stores)
 export const NAME_SEARCH_STORES = [
     'carulla',
     'jumbo',

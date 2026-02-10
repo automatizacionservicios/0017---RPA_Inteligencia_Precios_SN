@@ -39,8 +39,8 @@ export const useStoreManagement = (isRadar: boolean, activeTab: string) => {
         { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true, urls: ['mundohuevo.com'] },
         { id: 'farmatodo', name: 'Farmatodo', enabled: true, urls: ['farmatodo.com.co'] },
         { id: 'mercaldas', name: 'Mercaldas', enabled: true, urls: ['mercaldas.com'] },
-        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] }
-
+        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] },
+        { id: 'rappi', name: 'Rappi', enabled: true, urls: ['rappi.com.co'] }
     ]);
 
     const visibleStores = useMemo(() => {
