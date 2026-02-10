@@ -46,7 +46,7 @@ export class VtexStrategy implements ISearchStrategy {
             const basePath = isExitoGroup ? '/io/api/catalog_system/pub/products/search' : '/api/catalog_system/pub/products/search';
 
             const searchUrl = isEan
-                ? `https://${this.domain}${basePath}?fq=alternateIds_Ean:${ean || query}`
+                ? `https://${this.domain}${basePath}?fq=alternateIds_Ean:${encodeURIComponent(ean || query)}`
                 : `https://${this.domain}${basePath}?ft=${encodeURIComponent(query)}&_from=0&_to=${this.limit - 1}`; // Standard FT search
 
             console.log(`[VTEX] ${this.storeName} fetching: ${searchUrl}`);

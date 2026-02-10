@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { BenchmarkRequest, ProductResult } from "./interfaces/IProduct.ts";
-import { normalizeText } from "./core/utils.ts";
 import { StrategyFactory } from "./core/StrategyFactory.ts";
+import { ProductFilter } from "./core/ProductFilter.ts";
 
 export const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
@@ -37,7 +37,7 @@ serve(async (req: Request) => {
 
         // Add default external stores
         if (!selectedStores && !storeId) {
-            const deepLinks = ['d1', 'makro', 'berpa'];
+            const deepLinks = ['d1', 'makro'];
             deepLinks.forEach(dl => {
                 if (!storesToQuery.some(s => s.id === dl)) storesToQuery.push({ id: dl, name: dl, urls: [] });
             });
@@ -49,11 +49,14 @@ serve(async (req: Request) => {
 
         const results: ProductResult[] = [];
         const isRadar = body.isRadar || false;
-        const chunkSize = isRadar ? 25 : 5;
-        const scrapTimeout = isRadar ? 45000 : 15000;
 
-        for (let i = 0; i < storesToQuery.length; i += chunkSize) {
-            const chunk = storesToQuery.slice(i, i + chunkSize);
+        // --- DYNAMIC CONCURRENCY POOL ---
+        // For audit/radar, we allow more concurrency, but we process in chunks to avoid overwhelming memory.
+        const poolSize = isRadar ? 10 : 5;
+        const scrapTimeout = isRadar ? 45000 : 25000;
+
+        for (let i = 0; i < storesToQuery.length; i += poolSize) {
+            const chunk = storesToQuery.slice(i, i + poolSize);
             const promises = chunk.map(async (store) => {
                 if (store.id === 'mercadolibre') return [];
                 const strategy = StrategyFactory.getStrategy(store.id, limit);
@@ -69,54 +72,20 @@ serve(async (req: Request) => {
             chunkResults.forEach(r => results.push(...r));
         }
 
-        // --- HARMONIZED FILTERING (Deterministic) ---
+        // --- HARMONIZED FILTERING (Delegated to Core) ---
+        // We only apply strict text filtering if we are NOT in deep EAN search mode
         let finalProducts = results;
+        if (!ean) {
+            finalProducts = ProductFilter.filterProducts(results, productName || query, keywords, brand, category);
+        }
 
+        // --- SPECIFIC EAN FILTERING (Extra Safety) ---
         if (ean) {
             const cleanTargetEan = ean.replace(/\D/g, '');
             finalProducts = finalProducts.filter(p => !p.ean || p.ean.replace(/\D/g, '') === cleanTargetEan);
-        } else {
-            const brandTerm = normalizeText(brand || '');
-            const searchTerms = [
-                ...normalizeText(productName || '').split(/\s+/),
-                ...(Array.isArray(keywords) ? keywords.map(k => normalizeText(k)) : [])
-            ].filter(t => t.length > 1);
-
-            console.log(`[ORCHESTRATOR] Filtering. Brand: '${brandTerm}' | Tokens: [${searchTerms.join(', ')}]`);
-
-            finalProducts = finalProducts.filter(p => {
-                if (!p.price || p.price <= 1) return false;
-
-                const normName = normalizeText(p.productName);
-                const normBrand = normalizeText(p.brand || '');
-                const fullText = `${normName} ${normBrand} ${normalizeText(p.productType || '')}`;
-
-                // 1. Strict Brand Match
-                if (brandTerm) {
-                    const brandFound = normName.includes(brandTerm) || normBrand.includes(brandTerm);
-                    if (!brandFound) return false;
-                }
-
-                // 2. Token Match rate
-                if (searchTerms.length > 0) {
-                    const matchedTokens = searchTerms.filter(token => fullText.includes(token));
-                    const matchRate = matchedTokens.length / searchTerms.length;
-                    const threshold = searchTerms.length <= 2 ? 1.0 : 0.75;
-                    if (matchRate < threshold) return false;
-                }
-
-                // 3. Competition Filter
-                const isBimboSearch = searchTerms.some(t => t.includes('bimbo'));
-                if (isBimboSearch) {
-                    const competitors = ['servipan', 'comapan', 'mama ines', 'el country', 'casero', 'lalo', 'santa clara'];
-                    if (competitors.some(c => fullText.includes(c))) return false;
-                }
-
-                return true;
-            });
         }
 
-        // --- Final Sort & Diversity ---
+        // --- Final Sort & Diversity (Radar Optimization) ---
         if (isRadar) {
             const storeGroups: Record<string, ProductResult[]> = {};
             finalProducts.forEach(p => {
@@ -124,14 +93,10 @@ serve(async (req: Request) => {
                 storeGroups[p.store].push(p);
             });
 
-            Object.values(storeGroups).forEach(group => {
-                group.sort((a, b) => (b.discountPercentage || 0) - (a.discountPercentage || 0));
-            });
-
             const zipped: ProductResult[] = [];
             const storeNames = Object.keys(storeGroups);
-            let hasMore = true;
             let index = 0;
+            let hasMore = true;
 
             while (hasMore) {
                 hasMore = false;
@@ -145,17 +110,6 @@ serve(async (req: Request) => {
                 index++;
             }
             finalProducts = zipped;
-        } else {
-            finalProducts.sort((a, b) => {
-                if (ean) {
-                    const cleanTarget = ean.replace(/\D/g, '');
-                    const aEan = a.ean?.replace(/\D/g, '') === cleanTarget;
-                    const bEan = b.ean?.replace(/\D/g, '') === cleanTarget;
-                    if (aEan && !bEan) return -1;
-                    if (!aEan && bEan) return 1;
-                }
-                return 0;
-            });
         }
 
         console.log(`[ORCHESTRATOR] Returning ${finalProducts.length} results`);

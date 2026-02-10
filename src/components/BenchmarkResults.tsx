@@ -445,140 +445,170 @@ const BenchmarkResults = ({ products, rawContent, citations, metadata, searchQue
 
                       {/* Detail Rows */}
                       <AnimatePresence>
-                        {!isCollapsed && group.products
-                          .sort((a, b) => (a.price || Infinity) - (b.price || Infinity))
-                          .map((product, idx) => {
-                            const isLowestPrice = hasCompetition && product.price > 0 && product.price === lowestPriceForGroup;
+                        {!isCollapsed && (() => {
+                          const validGroupProducts = group.products.filter(p => p.pricePerGram > 0);
+                          const minPricePerGramInGroup = validGroupProducts.length > 0
+                            ? Math.min(...validGroupProducts.map(p => p.pricePerGram))
+                            : Infinity;
 
-                            return (
-                              <TableRow
-                                key={`${group.key}-${idx}`}
-                                className={`hover:bg-stone-50/50 transition-colors border-l-4 ${isLowestPrice ? 'border-l-emerald-500 bg-emerald-50/20' : 'border-l-transparent'}`}
-                                style={{ borderTop: '1px solid #f8fafc' }}
-                              >
-                                <TableCell className="pl-12 py-5">
-                                  <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice ? 'border-emerald-200 ring-4 ring-emerald-500/10' : 'border-stone-100'
-                                      }`}>
-                                      {getStoreBrand(product.store).icon ? (
-                                        <img src={getStoreBrand(product.store).icon!} alt={product.store} className="w-full h-full object-contain" />
-                                      ) : (
-                                        <StoreIcon className="w-4 h-4 text-stone-300" />
+                          return group.products
+                            .sort((a, b) => (a.price || Infinity) - (b.price || Infinity))
+                            .map((product, idx) => {
+                              const isLowestPrice = hasCompetition && product.price > 0 && product.price === lowestPriceForGroup;
+                              const isLowestPricePerGram = hasCompetition && product.pricePerGram > 0 && product.pricePerGram === minPricePerGramInGroup;
+
+                              return (
+                                <TableRow
+                                  key={`${group.key}-${idx}`}
+                                  className={`hover:bg-stone-50/50 transition-colors border-l-4 ${isLowestPrice ? 'border-l-emerald-500 bg-emerald-50/20' : 'border-l-transparent'}`}
+                                  style={{ borderTop: '1px solid #f8fafc' }}
+                                >
+                                  <TableCell className="pl-12 py-5">
+                                    <div className="flex items-center gap-3">
+                                      <div className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice ? 'border-emerald-200 ring-4 ring-emerald-500/10' : 'border-stone-100'
+                                        }`}>
+                                        {getStoreBrand(product.store).icon ? (
+                                          <img src={getStoreBrand(product.store).icon!} alt={product.store} className="w-full h-full object-contain" />
+                                        ) : (
+                                          <StoreIcon className="w-4 h-4 text-stone-300" />
+                                        )}
+                                      </div>
+                                      <span className={`text-[11px] font-black uppercase tracking-tight ${isLowestPrice ? 'text-emerald-700' : 'text-stone-600'}`}>
+                                        {product.store}
+                                      </span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-3">
+                                      {product.image && (
+                                        <TooltipProvider>
+                                          <Tooltip delayDuration={0}>
+                                            <TooltipTrigger asChild>
+                                              <div className="w-12 h-12 rounded-lg border border-stone-100 overflow-hidden bg-white shrink-0 shadow-sm cursor-zoom-in group/img">
+                                                <img
+                                                  src={product.image}
+                                                  alt={product.productName}
+                                                  className="w-full h-full object-contain transition-transform duration-300 group-hover/img:scale-110"
+                                                  onError={(e) => (e.currentTarget.style.display = 'none')}
+                                                />
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right" className="p-0 border-none bg-transparent shadow-none overflow-visible z-[100]">
+                                              <div className="w-64 h-64 bg-white rounded-2xl p-2 shadow-2xl border border-stone-100 animate-in zoom-in-50 duration-200">
+                                                <img
+                                                  src={product.image}
+                                                  alt={product.productName}
+                                                  className="w-full h-full object-contain rounded-xl"
+                                                />
+                                              </div>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
+                                      )}
+                                      <div className="flex flex-col gap-0.5 min-w-0">
+                                        <span className="text-[10px] font-medium text-stone-400 italic line-clamp-1">{product.productName}</span>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-[10px] font-black text-stone-800 uppercase tracking-widest">{product.presentation}</span>
+
+                                          {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
+                                          {groupTargetWeight && (product.gramsAmount || getWeight(product.productName)) && Math.abs((product.gramsAmount || getWeight(product.productName))! - Number(groupTargetWeight)) > Number(groupTargetWeight) * 0.1 && (
+                                            <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[7px] font-black text-amber-700 uppercase tracking-tighter shadow-sm shrink-0">
+                                              <AlertTriangle className="w-2 h-2 text-amber-500" />
+                                              VERIF. GRAM
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className={`flex flex-col items-center justify-center text-center ${isLowestPrice ? 'text-emerald-600' : 'text-stone-700'}`}>
+                                      {product.regularPrice && product.regularPrice > product.price && (
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <span className="text-[10px] font-bold text-stone-300 line-through">${product.regularPrice.toLocaleString('es-CO')}</span>
+                                          {product.discountPercentage && (
+                                            <span className="text-[9px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded-md shadow-sm">
+                                              -{product.discountPercentage}%
+                                            </span>
+                                          )}
+                                        </div>
+                                      )}
+                                      <span className="text-[15px] font-mono font-black">
+                                        {typeof product.price === 'number' ? `$${product.price.toLocaleString('es-CO')}` : '---'}
+                                      </span>
+
+                                      {isLowestPrice && (
+                                        <TooltipProvider>
+                                          <Tooltip delayDuration={150}>
+                                            <TooltipTrigger asChild>
+                                              <div className="flex flex-row items-center gap-2 mt-1.5 justify-center flex-nowrap min-w-max">
+                                                <div className="inline-flex items-center gap-1.5 text-[8px] bg-amber-400 text-stone-900 px-2.5 py-1 rounded-full w-fit border border-amber-500/30 font-black uppercase tracking-widest cursor-help shadow-sm shrink-0">
+                                                  <Zap className="w-2.5 h-2.5 fill-stone-900" />
+                                                  OPTIMAL
+                                                </div>
+                                                {savingsVsNext > 0 && (
+                                                  <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100/50 w-fit shadow-sm shrink-0">
+                                                    <TrendingDown className="w-3 h-3 text-emerald-600" />
+                                                    <span className="text-[9px] font-black text-emerald-700 uppercase tracking-tighter">
+                                                      -${savingsVsNext.toLocaleString('es-CO')}
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </TooltipTrigger>
+                                            <TooltipContent side="right" className="bg-stone-900 text-white border-stone-800 p-4 shadow-2xl rounded-2xl max-w-[200px]">
+                                              <div className="space-y-2">
+                                                <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Análisis de Diferencial</p>
+                                                <p className="text-[11px] font-medium leading-tight text-white/90">
+                                                  Este canal es <span className="text-emerald-400 font-black">${savingsVsNext.toLocaleString('es-CO')}</span> más económico que el siguiente competidor detectado.
+                                                </p>
+                                                <div className="pt-2 border-t border-white/10">
+                                                  <p className="text-[9px] font-bold text-stone-400 uppercase">Eficiencia Máxima</p>
+                                                </div>
+                                              </div>
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        </TooltipProvider>
                                       )}
                                     </div>
-                                    <span className={`text-[11px] font-black uppercase tracking-tight ${isLowestPrice ? 'text-emerald-700' : 'text-stone-600'}`}>
-                                      {product.store}
-                                    </span>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-3">
-                                    {product.image && (
-                                      <div className="w-12 h-12 rounded-lg border border-stone-100 overflow-hidden bg-white shrink-0 shadow-sm">
-                                        <img
-                                          src={product.image}
-                                          alt={product.productName}
-                                          className="w-full h-full object-contain"
-                                          onError={(e) => (e.currentTarget.style.display = 'none')}
-                                        />
-                                      </div>
-                                    )}
-                                    <div className="flex flex-col gap-0.5 min-w-0">
-                                      <span className="text-[10px] font-medium text-stone-400 italic line-clamp-1">{product.productName}</span>
-                                      <div className="flex items-center gap-2">
-                                        <span className="text-[10px] font-black text-stone-800 uppercase tracking-widest">{product.presentation}</span>
-
-                                        {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
-                                        {groupTargetWeight && (product.gramsAmount || getWeight(product.productName)) && Math.abs((product.gramsAmount || getWeight(product.productName))! - Number(groupTargetWeight)) > Number(groupTargetWeight) * 0.1 && (
-                                          <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[7px] font-black text-amber-700 uppercase tracking-tighter shadow-sm shrink-0">
-                                            <AlertTriangle className="w-2 h-2 text-amber-500" />
-                                            Gramaje
-                                          </div>
-                                        )}
-                                      </div>
+                                  </TableCell>
+                                  <TableCell className="relative">
+                                    <div className={`font-mono text-xs font-black transition-all ${isLowestPricePerGram ? 'text-emerald-600 scale-110' : 'text-stone-500'}`}>
+                                      {typeof product.pricePerGram === 'number' ? `$${product.pricePerGram.toFixed(2)}` : '---'}
+                                      {isLowestPricePerGram && (
+                                        <div className="absolute top-1/2 -left-2 -translate-y-1/2">
+                                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)] animate-pulse" />
+                                        </div>
+                                      )}
                                     </div>
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  <div className={`flex flex-col items-center justify-center text-center ${isLowestPrice ? 'text-emerald-600' : 'text-stone-700'}`}>
-                                    {product.regularPrice && product.regularPrice > product.price && (
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-[10px] font-bold text-stone-300 line-through">${product.regularPrice.toLocaleString('es-CO')}</span>
-                                        {product.discountPercentage && (
-                                          <span className="text-[9px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded-md shadow-sm">
-                                            -{product.discountPercentage}%
-                                          </span>
-                                        )}
-                                      </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock'
+                                      ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                      : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
+                                      }`}>
+                                      <div className={`w-1.5 h-1.5 rounded-full ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock' ? 'bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`} />
+                                      {product.availability}
+                                    </div>
+                                  </TableCell>
+                                  <TableCell className="text-right pr-8">
+                                    {product.url && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        asChild
+                                        className="h-8 w-8 p-0 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl transition-all duration-300"
+                                      >
+                                        <a href={product.url} target="_blank" rel="noopener noreferrer" aria-label="Ver producto en tienda">
+                                          <ExternalLink className="w-4 h-4" />
+                                        </a>
+                                      </Button>
                                     )}
-                                    <span className="text-[15px] font-mono font-black">
-                                      {typeof product.price === 'number' ? `$${product.price.toLocaleString('es-CO')}` : '---'}
-                                    </span>
-
-                                    {isLowestPrice && (
-                                      <TooltipProvider>
-                                        <Tooltip delayDuration={150}>
-                                          <TooltipTrigger asChild>
-                                            <div className="flex flex-row items-center gap-2 mt-1.5 justify-center flex-nowrap min-w-max">
-                                              <div className="inline-flex items-center gap-1.5 text-[8px] bg-amber-400 text-stone-900 px-2.5 py-1 rounded-full w-fit border border-amber-500/30 font-black uppercase tracking-widest cursor-help shadow-sm shrink-0">
-                                                <Zap className="w-2.5 h-2.5 fill-stone-900" />
-                                                OPTIMAL
-                                              </div>
-                                              {savingsVsNext > 0 && (
-                                                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-100/50 w-fit shadow-sm shrink-0">
-                                                  <TrendingDown className="w-3 h-3 text-emerald-600" />
-                                                  <span className="text-[9px] font-black text-emerald-700 uppercase tracking-tighter">
-                                                    -${savingsVsNext.toLocaleString('es-CO')}
-                                                  </span>
-                                                </div>
-                                              )}
-                                            </div>
-                                          </TooltipTrigger>
-                                          <TooltipContent side="right" className="bg-stone-900 text-white border-stone-800 p-4 shadow-2xl rounded-2xl max-w-[200px]">
-                                            <div className="space-y-2">
-                                              <p className="text-[10px] font-black text-amber-400 uppercase tracking-widest">Análisis de Diferencial</p>
-                                              <p className="text-[11px] font-medium leading-tight text-white/90">
-                                                Este canal es <span className="text-emerald-400 font-black">${savingsVsNext.toLocaleString('es-CO')}</span> más económico que el siguiente competidor detectado.
-                                              </p>
-                                              <div className="pt-2 border-t border-white/10">
-                                                <p className="text-[9px] font-bold text-stone-400 uppercase">Eficiencia Máxima</p>
-                                              </div>
-                                            </div>
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </TooltipProvider>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-stone-500 font-mono text-xs font-black">
-                                  {typeof product.pricePerGram === 'number' ? `$${product.pricePerGram.toFixed(2)}` : '---'}
-                                </TableCell>
-                                <TableCell>
-                                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock'
-                                    ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                    : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
-                                    }`}>
-                                    <div className={`w-1.5 h-1.5 rounded-full ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock' ? 'bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`} />
-                                    {product.availability}
-                                  </div>
-                                </TableCell>
-                                <TableCell className="text-right pr-8">
-                                  {product.url && (
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      asChild
-                                      className="h-8 w-8 p-0 hover:bg-emerald-50 hover:text-emerald-600 rounded-xl transition-all duration-300"
-                                    >
-                                      <a href={product.url} target="_blank" rel="noopener noreferrer" aria-label="Ver producto en tienda">
-                                        <ExternalLink className="w-4 h-4" />
-                                      </a>
-                                    </Button>
-                                  )}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
+                                  </TableCell>
+                                </TableRow>
+                              );
+                            });
+                        })()}
                       </AnimatePresence>
                     </React.Fragment>
                   );

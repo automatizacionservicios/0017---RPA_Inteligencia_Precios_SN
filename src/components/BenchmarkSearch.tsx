@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, ChevronDown, Info, Plus, X, Store as StoreIcon, Beef, Barcode, Tag, Settings2, ArrowRight } from "lucide-react";
+import { Search, Info, Plus, X, Store as StoreIcon, Beef, Barcode, Tag, Settings2, ArrowRight } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
@@ -18,18 +17,10 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { isEanOnly } from "@/lib/store-capabilities";
+import { useStoreManagement, manualStoreIds, type Store, type AdvancedOptions } from "@/hooks/useStoreManagement";
+import { useBenchmarkSearch } from "@/hooks/useBenchmarkSearch";
+import { StoreCard } from "./benchmark/StoreCard";
 
-export interface Store {
-    id: string;
-    name: string;
-    enabled: boolean;
-    urls: string[];
-}
-
-export interface AdvancedOptions {
-    searchRecency: 'day' | 'week' | 'month';
-    deepResearch: boolean;
-}
 
 interface BenchmarkSearchProps {
     onSearch: (
@@ -62,231 +53,44 @@ const BenchmarkSearch = ({
     isEanMode = false,
     isRadar = false
 }: BenchmarkSearchProps) => {
-    const [productName, setProductName] = useState("");
-    const [brandName, setBrandName] = useState("");
-    const [categoryName, setCategoryName] = useState("");
-    const [eanCode, setEanCode] = useState("");
-    const [keywords, setKeywords] = useState("");
-    const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState("");
-    const [catalogCategory, setCatalogCategory] = useState(""); // Free text search term
-    const [catalogLimit, setCatalogLimit] = useState(20); // Default 20, max 50
     const [activeTab, setActiveTab] = useState(isEanMode ? "ean" : "name");
-
-    const [stores, setStores] = useState<Store[]>([
-        { id: 'carulla', name: 'Carulla', enabled: true, urls: ['carulla.com'] },
-        { id: 'jumbo', name: 'Jumbo', enabled: true, urls: ['jumbo.com.co'] },
-        { id: 'olimpica', name: 'Olímpica', enabled: true, urls: ['olimpica.com'] },
-        { id: 'exito', name: 'Éxito', enabled: true, urls: ['exito.com'] },
-        { id: 'd1', name: 'Tiendas D1', enabled: true, urls: ['domicilios.tiendasd1.com'] },
-        { id: 'makro', name: 'Makro', enabled: true, urls: ['tienda.makro.com.co'] },
-        { id: 'euro', name: 'Euro Supermercados', enabled: true, urls: ['www.eurosupermercados.com.co'] },
-        { id: 'vaquita', name: 'Vaquita Express', enabled: true, urls: ['vaquitaexpress.com.co'] },
-        { id: 'megatiendas', name: 'Megatiendas', enabled: true, urls: ['www.megatiendas.co'] },
-        { id: 'mercacentro', name: 'Mercacentro', enabled: true, urls: ['www.mercacentro.com'] },
-        { id: 'zapatoca', name: 'Mercados Zapatoca', enabled: true, urls: ['mercadozapatoca.com'] },
-        { id: 'nutresa', name: 'Nutresa en casa', enabled: true, urls: ['tiendanutresaencasa.com'] },
-        { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true, urls: ['mundohuevo.com'] },
-        { id: 'farmatodo', name: 'Farmatodo', enabled: true, urls: ['farmatodo.com.co'] },
-        // Manual Stores (Only active in Radar mode)
-        { id: 'berpa', name: 'Berpa Supermercados', enabled: true, urls: ['berpa.com.co'] },
-        { id: 'mercaldas', name: 'Mercaldas', enabled: true, urls: ['mercaldas.com'] },
-        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] },
-        { id: 'mercadolibre', name: 'Mercado Libre', enabled: true, urls: ['mercadolibre.com.co'] }
-    ]);
-
-    // Dynamic store filtering based on search mode
-    const visibleStores = useMemo(() => {
-        // Radar NOMBRE → Mostrar TODAS las tiendas
-        if (activeTab === 'name') {
-            return stores; // Show all stores
-        }
-        // Radar EAN → Ocultar tiendas EAN-only (solo queremos buscar por EAN)
-        return stores.filter(s => !isEanOnly(s.id));
-    }, [stores, activeTab]);
-
-    // Filter stores based on mode
-    const manualStoreIds = ['berpa', 'mercadolibre'];
-    const filteredStores = isRadar
-        ? visibleStores
-        : visibleStores.filter(s => !manualStoreIds.includes(s.id));
-    const [customStores, setCustomStores] = useState<Store[]>([]);
-    const [newStoreName, setNewStoreName] = useState("");
-    const [newStoreUrl, setNewStoreUrl] = useState("");
-
     const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({
         searchRecency: 'week',
         deepResearch: true
     });
 
-    const [showAdvanced, setShowAdvanced] = useState(false);
+    const {
+        stores,
+        filteredStores,
+        handleStoreToggle,
+        handleSelectAllStores,
+        enabledStoresCount
+    } = useStoreManagement(isRadar, activeTab);
 
-    // Cargar tiendas personalizadas del localStorage
-    useEffect(() => {
-        const saved = localStorage.getItem('customBenchmarkStores');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                setCustomStores(parsed);
-            } catch (e) {
-                console.error('Error loading custom stores:', e);
-            }
-        }
-    }, []);
+    const {
+        productName, setProductName,
+        brandName, setBrandName,
+        categoryName, setCategoryName,
+        eanCode, setEanCode,
+        keywords, setKeywords,
+        selectedStoreForCatalog, setSelectedStoreForCatalog,
+        catalogCategory, setCatalogCategory,
+        catalogLimit, setCatalogLimit,
+        handleProductSearch,
+        handleCatalogSearch
+    } = useBenchmarkSearch({
+        initialSearch,
+        isEanMode: activeTab === "ean",
+        isLoading,
+        stores,
+        advancedOptions,
+        onSearch,
+        activeTab,
+        setActiveTab
+    });
 
-    // Guardar tiendas personalizadas en localStorage
-    useEffect(() => {
-        if (customStores.length > 0) {
-            localStorage.setItem('customBenchmarkStores', JSON.stringify(customStores));
-        }
-    }, [customStores]);
 
-    // Sincronizar estado inicial y pestañas
-    useEffect(() => {
-        if (initialSearch) {
-            if (isEanMode) {
-                setEanCode(initialSearch);
-                setActiveTab("ean");
-            } else {
-                setProductName(initialSearch);
-                setActiveTab("name");
-            }
 
-            if (!isLoading) {
-                const timer = setTimeout(() => {
-                    const enabledStores = stores.filter(s => s.enabled);
-                    const enabledCustomStores = customStores.filter(s => s.enabled);
-                    const allEnabledStores = [...enabledStores, ...enabledCustomStores];
-
-                    onSearch(
-                        'product',
-                        isEanMode ? "" : initialSearch,
-                        "",
-                        "",
-                        allEnabledStores,
-                        advancedOptions,
-                        undefined,
-                        [],
-                        isEanMode ? initialSearch : undefined,
-                        undefined,
-                        undefined,
-                        undefined
-                    );
-                }, 300);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [initialSearch, isEanMode]);
-
-    const isValidDomain = (url: string): boolean => {
-        const domainRegex = /^([a-z0-9]+(-[a-z0-9]+)*\.)+[a-z]{2,}$/i;
-        const cleanUrl = url.replace(/^https?:\/\//, '').replace(/\/$/, '');
-        return domainRegex.test(cleanUrl);
-    };
-
-    const handleAddCustomStore = () => {
-        if (newStoreName.trim() && newStoreUrl.trim()) {
-            const cleanUrl = newStoreUrl.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
-
-            if (!isValidDomain(cleanUrl)) {
-                toast.error("URL inválida. Usa formato: dominio.com");
-                return;
-            }
-
-            const newStore: Store = {
-                id: `custom-${Date.now()}`,
-                name: newStoreName.trim(),
-                enabled: true,
-                urls: [cleanUrl]
-            };
-            setCustomStores([...customStores, newStore]);
-            setNewStoreName("");
-            setNewStoreUrl("");
-            toast.success(`${newStoreName} agregada correctamente`);
-        }
-    };
-
-    const handleToggleCustomStore = (storeId: string) => {
-        setCustomStores(customStores.map(s =>
-            s.id === storeId ? { ...s, enabled: !s.enabled } : s
-        ));
-    };
-
-    const handleRemoveCustomStore = (storeId: string) => {
-        setCustomStores(customStores.filter(s => s.id !== storeId));
-        toast.success("Fuente eliminada");
-    };
-
-    const handleStoreToggle = (storeId: string) => {
-        setStores(stores.map(s =>
-            s.id === storeId ? { ...s, enabled: !s.enabled } : s
-        ));
-    };
-
-    const handleSelectAllStores = () => {
-        const allEnabled = stores.every(s => s.enabled);
-        setStores(stores.map(s => ({ ...s, enabled: !allEnabled })));
-    };
-
-    const handleProductSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!productName.trim() && !eanCode.trim()) {
-            toast.error("Por favor ingresa el nombre del producto o un EAN");
-            return;
-        }
-
-        const allStores = [...stores, ...customStores];
-        const selectedStores = allStores.filter(store => store.enabled);
-
-        if (selectedStores.length === 0) {
-            toast.error("Por favor selecciona al menos una tienda");
-            return;
-        }
-
-        // Parse keywords
-        const keywordsList = keywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
-
-        onSearch(
-            'product',
-            productName.trim(),
-            "", // unused productType
-            "", // unused presentation
-            selectedStores,
-            advancedOptions,
-            undefined, // storeId
-            keywordsList,
-            eanCode.trim() || undefined,
-            brandName.trim() || undefined,
-            categoryName.trim() || undefined,
-            undefined // productLimit
-        );
-    };
-
-    const handleCatalogSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!selectedStoreForCatalog) {
-            toast.error("Por favor selecciona una tienda");
-            return;
-        }
-
-        onSearch(
-            'store-catalog',
-            '',
-            '',
-            '',
-            [],
-            advancedOptions,
-            selectedStoreForCatalog,
-            catalogCategory.trim() ? [catalogCategory.trim()] : [],
-            eanCode.trim() || undefined,
-            brandName.trim() || undefined,
-            catalogCategory.trim() || undefined,
-            catalogLimit
-        );
-    };
-
-    const enabledStoresCount = filteredStores.filter(s => s.enabled).length + customStores.filter(s => s.enabled).length;
     const estimatedTime = advancedOptions.deepResearch ? "30-90 seg" : "10-20 seg";
 
     return (
@@ -427,16 +231,16 @@ const BenchmarkSearch = ({
                                 </div>
                                 <div>
                                     <h4 className="text-[12px] font-black text-stone-800 uppercase tracking-widest">
-                                        {isEanMode ? "Red de Búsqueda Activa (14 Canales)" : "Canales de Consulta (16)"}
+                                        {activeTab === "ean" ? "Red de Búsqueda Activa" : "Canales de Consulta"}
                                     </h4>
-                                    {isEanMode && (
+                                    {activeTab === "ean" && (
                                         <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-tighter mt-0.5">
                                             Optimizando búsqueda en toda la red comercial Nutresa
                                         </p>
                                     )}
                                 </div>
                             </div>
-                            {!isEanMode && (
+                            {activeTab !== "ean" && (
                                 <div className="flex items-center gap-4">
                                     <Button
                                         type="button"
@@ -452,168 +256,18 @@ const BenchmarkSearch = ({
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                             <AnimatePresence>
-                                {filteredStores.map((store, i) => {
-                                    const brand = getStoreBrand(store.name);
-                                    if (!store.id) return null; // Safety check
-
-                                    const isManual = manualStoreIds.includes(store.id);
-
-                                    return (
-                                        <motion.div
-                                            key={store.id}
-                                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            transition={{ duration: 0.4, delay: i * 0.03 }}
-                                            className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all select-none ${isEanMode
-                                                ? 'bg-stone-50/50 border-stone-100 opacity-100 cursor-default'
-                                                : store.enabled
-                                                    ? 'bg-emerald-50 border-emerald-100 shadow-sm cursor-pointer group hover:scale-[1.02] active:scale-95'
-                                                    : 'bg-white border-stone-100 hover:border-stone-200 opacity-60 grayscale hover:grayscale-0 cursor-pointer group hover:scale-[1.02] active:scale-95'
-                                                }`}
-                                            onClick={(e) => {
-                                                if (isEanMode) return;
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                handleStoreToggle(store.id);
-                                            }}
-                                        >
-                                            <div className="flex items-center gap-3 w-full min-w-0">
-                                                <div className={`w-9 h-9 rounded-xl overflow-hidden shadow-sm border flex-shrink-0 flex items-center justify-center bg-white transition-all ${(isEanMode || store.enabled) ? 'border-emerald-200 ring-2 ring-emerald-500/20' : 'border-stone-100'
-                                                    }`}>
-                                                    {brand.icon ? (
-                                                        <img src={brand.icon} alt={store.name} className="w-full h-full object-contain p-1" />
-                                                    ) : (
-                                                        <StoreIcon className="w-4 h-4 text-stone-300" />
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-col min-w-0 pr-2">
-                                                    <Label
-                                                        htmlFor={store.id}
-                                                        className={`text-[11px] font-black uppercase tracking-tight leading-tight transition-colors truncate ${(isEanMode || store.enabled) ? 'text-emerald-700' : 'text-stone-500'
-                                                            } ${isEanMode ? 'cursor-default' : 'cursor-pointer'}`}
-                                                        onClick={(e) => { if (isEanMode) e.preventDefault(); else e.stopPropagation(); }}
-                                                    >
-                                                        {store.name}
-                                                    </Label>
-                                                    {isEanMode && isManual && (
-                                                        <span className="text-[7px] font-black text-amber-600 uppercase tracking-tighter mt-0.5">
-                                                            Consulta Manual
-                                                        </span>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            {!isEanMode && (
-                                                <div onClick={(e) => e.stopPropagation()}>
-                                                    <Checkbox
-                                                        id={store.id}
-                                                        checked={store.enabled}
-                                                        onCheckedChange={() => handleStoreToggle(store.id)}
-                                                        className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-none h-4 w-4 rounded-md flex-shrink-0"
-                                                    />
-                                                </div>
-                                            )}
-                                        </motion.div>
-                                    );
-                                })}
-                            </AnimatePresence>
-                            {customStores.map(store => {
-                                const brand = getStoreBrand(store.name);
-                                return (
-                                    <div
+                                {filteredStores.map((store, i) => (
+                                    <StoreCard
                                         key={store.id}
-                                        className={`relative flex items-center justify-between p-3.5 rounded-2xl border transition-all cursor-pointer group/store hover:scale-[1.02] active:scale-95 ${store.enabled
-                                            ? 'bg-emerald-50 border-emerald-100 shadow-sm'
-                                            : 'bg-white border-stone-100 hover:border-stone-200'
-                                            }`}
-                                        onClick={() => handleToggleCustomStore(store.id)}
-                                    >
-                                        <div className="flex items-center gap-3 w-full min-w-0">
-                                            <div className={`w-9 h-9 rounded-xl overflow-hidden border flex-shrink-0 flex items-center justify-center bg-white shadow-sm ${store.enabled ? 'border-emerald-200 ring-2 ring-emerald-500/20' : 'border-stone-100'
-                                                }`}>
-                                                {brand.icon ? (
-                                                    <img src={brand.icon} alt={store.name} className="w-full h-full object-contain p-1" />
-                                                ) : (
-                                                    <StoreIcon className="w-4 h-4 text-stone-300" />
-                                                )}
-                                            </div>
-                                            <Label htmlFor={store.id} className={`text-[11px] font-black uppercase tracking-tight cursor-pointer leading-tight transition-colors truncate ${store.enabled ? 'text-emerald-700' : 'text-stone-500'
-                                                }`}>
-                                                {store.name}
-                                            </Label>
-                                        </div>
-                                        <div className="flex items-center gap-2 flex-shrink-0">
-                                            <Checkbox
-                                                id={store.id}
-                                                checked={store.enabled}
-                                                onCheckedChange={() => handleToggleCustomStore(store.id)}
-                                                className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-none h-4 w-4 rounded-md"
-                                            />
-                                            <button
-                                                type="button"
-                                                aria-label="Eliminar tienda"
-                                                onClick={(e) => { e.stopPropagation(); handleRemoveCustomStore(store.id); }}
-                                                className="opacity-0 group-hover/store:opacity-100 p-1.5 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"
-                                            >
-                                                <X className="w-3.5 h-3.5" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                );
-                            })}
+                                        store={store}
+                                        isEanMode={isEanMode}
+                                        onToggle={handleStoreToggle}
+                                        index={i}
+                                    />
+                                ))}
+                            </AnimatePresence>
                         </div>
 
-                        <Collapsible open={showAdvanced} onOpenChange={setShowAdvanced} className="space-y-4 pt-4">
-                            <div className="flex justify-center">
-                                <CollapsibleTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-9 px-6 rounded-full border border-stone-100 bg-white font-black text-[10px] uppercase tracking-widest text-stone-500 hover:text-emerald-600 transition-all gap-2">
-                                        {showAdvanced ? "Cerrar Panel Avanzado" : "Abrir Panel Avanzado"}
-                                        <ChevronDown className={`h-3 w-3 transition-transform ${showAdvanced ? "rotate-180" : ""}`} />
-                                    </Button>
-                                </CollapsibleTrigger>
-                            </div>
-
-                            <CollapsibleContent>
-                                <div className="p-6 rounded-3xl bg-stone-50 border border-stone-100 grid grid-cols-1 md:grid-cols-2 gap-8 shadow-inner">
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Fuente Personalizada</Label>
-                                        <div className="flex gap-2">
-                                            <Input
-                                                placeholder="Tienda..."
-                                                value={newStoreName}
-                                                onChange={(e) => setNewStoreName(e.target.value)}
-                                                className="h-11 text-xs rounded-xl bg-white border-stone-100 font-bold"
-                                            />
-                                            <Input
-                                                placeholder="dominio.com"
-                                                value={newStoreUrl}
-                                                onChange={(e) => setNewStoreUrl(e.target.value)}
-                                                className="h-11 text-xs rounded-xl bg-white border-stone-100 font-mono"
-                                            />
-                                            <Button type="button" size="icon" onClick={handleAddCustomStore} className="rounded-xl h-11 w-11 bg-emerald-600 shadow-md shadow-emerald-200">
-                                                <Plus className="w-4 h-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black text-stone-400 uppercase tracking-widest ml-1">Profundidad del Análisis</Label>
-                                        <Select
-                                            value={advancedOptions.searchRecency}
-                                            onValueChange={(v: any) => setAdvancedOptions({ ...advancedOptions, searchRecency: v })}
-                                        >
-                                            <SelectTrigger className="h-11 text-xs rounded-xl bg-white border-stone-100 font-bold">
-                                                <SelectValue placeholder="Recencia" />
-                                            </SelectTrigger>
-                                            <SelectContent className="rounded-xl border-stone-100 shadow-2xl">
-                                                <SelectItem value="day" className="font-bold">Alta Definición (24h)</SelectItem>
-                                                <SelectItem value="week" className="font-bold">Equilibrado (7d)</SelectItem>
-                                                <SelectItem value="month" className="font-bold">Económico (30d)</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                </div>
-                            </CollapsibleContent>
-                        </Collapsible>
 
                         <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-8 border-t border-stone-100">
                             <div className="flex flex-col gap-1.5">
@@ -686,18 +340,6 @@ const BenchmarkSearch = ({
                                                 {store.name}
                                             </SelectItem>
                                         ))}
-                                        {customStores.length > 0 && (
-                                            <>
-                                                <div className="px-3 py-2 text-[10px] font-black text-stone-400 border-t border-stone-50 uppercase tracking-widest">
-                                                    Fuentes Personalizadas
-                                                </div>
-                                                {customStores.map(store => (
-                                                    <SelectItem key={store.id} value={store.id} className="font-bold py-3 text-stone-700 focus:bg-amber-50 focus:text-amber-700 rounded-xl my-1 mx-1.5">
-                                                        {store.name} <Badge variant="outline" className="ml-2 text-[9px] uppercase font-black border-stone-200 text-amber-600 bg-amber-50">Custom</Badge>
-                                                    </SelectItem>
-                                                ))}
-                                            </>
-                                        )}
                                     </SelectContent>
                                 </Select>
                             </div>

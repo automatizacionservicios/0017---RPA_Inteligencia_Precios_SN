@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useLayoutEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
@@ -56,6 +56,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const activeProducts = products.filter(p => p.price > 0);
   if (activeProducts.length === 0) return null;
@@ -110,6 +111,13 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   // 5. Determinar Líder de Mercado
   const marketLeader = pieData.length > 0 ? pieData[0].name : 'N/A';
   const totalProducts = Object.keys(productGroups).length;
+
+  useLayoutEffect(() => {
+    if (chartRef.current && activeTab === 'details' && isExpanded) {
+      const height = Math.max(400, activeProducts.length * 35);
+      chartRef.current.style.height = `${height}px`;
+    }
+  }, [activeProducts.length, activeTab, isExpanded]);
 
   return (
     <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden group">
@@ -262,7 +270,7 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 </div>
               ) : (
                 <div className="h-[400px] w-full mt-4 overflow-y-auto custom-scrollbar pr-4">
-                  <div className="min-h-[400px]" style={{ height: Math.max(400, activeProducts.length * 35) }}>
+                  <div className="min-h-[400px]" ref={chartRef}>
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={chartData}

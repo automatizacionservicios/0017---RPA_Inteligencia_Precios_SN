@@ -6,7 +6,8 @@ import { Search, Barcode, Store as StoreIcon, Sparkles, Info } from "lucide-reac
 import { Checkbox } from "@/components/ui/checkbox";
 import { getStoreBrand } from "@/lib/store-branding";
 import { Badge } from "@/components/ui/badge";
-import type { Store } from "@/components/BenchmarkSearch";
+import type { Store } from "@/hooks/useStoreManagement";
+
 
 interface EanSearchProps {
     onSearch: (productName: string, ean: string | undefined, selectedStores: Store[]) => void;
@@ -33,11 +34,10 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
         { id: 'nutresa', name: 'Nutresa en casa', enabled: true, urls: ['tiendanutresaencasa.com'] },
         { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true, urls: ['mundohuevo.com'] },
         { id: 'farmatodo', name: 'Farmatodo', enabled: true, urls: ['farmatodo.com.co'] },
-        { id: 'berpa', name: 'Berpa Supermercados', enabled: true, urls: ['berpa.com.co'] },
         { id: 'mercaldas', name: 'Mercaldas', enabled: true, urls: ['mercaldas.com'] },
-        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] },
-        { id: 'mercadolibre', name: 'Mercado Libre', enabled: true, urls: ['mercadolibre.com.co'] }
+        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] }
     ]);
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

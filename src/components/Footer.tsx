@@ -23,16 +23,16 @@ const Footer = () => {
               Plataforma avanzada de inteligencia de mercado y monitoreo de precios en tiempo real para el ecosistema de Retail en Colombia.
             </p>
             <div className="flex gap-4 pt-4">
-              <a href="https://www.instagram.com/gruponutresa/" target="_blank" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a href="https://www.instagram.com/gruponutresa/" target="_blank" rel="noopener noreferrer" title="Instagram Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="https://www.facebook.com/GrupoNutresa/" target="_blank" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a href="https://www.facebook.com/GrupoNutresa/" target="_blank" rel="noopener noreferrer" title="Facebook Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="https://twitter.com/GrupoNutresa" target="_blank" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a href="https://twitter.com/GrupoNutresa" target="_blank" rel="noopener noreferrer" title="Twitter Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
                 <Twitter className="w-4 h-4" />
               </a>
-              <a href="https://www.linkedin.com/company/grupo-nutresa/" target="_blank" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a href="https://www.linkedin.com/company/grupo-nutresa/" target="_blank" rel="noopener noreferrer" title="LinkedIn Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
                 <Linkedin className="w-4 h-4" />
               </a>
             </div>
@@ -95,7 +95,7 @@ const Footer = () => {
                 <span className="text-emerald-500 font-black tracking-widest uppercase text-[9px] bg-emerald-500/10 px-2 py-1 rounded-md">Active</span>
               </div>
               <p className="text-[10px] text-stone-500 leading-tight pt-4 italic">
-                Monitoreo automático activo para 14+ tiendas retail en Colombia.
+                Monitoreo automático activo para 16+ tiendas retail en Colombia.
               </p>
             </div>
           </div>

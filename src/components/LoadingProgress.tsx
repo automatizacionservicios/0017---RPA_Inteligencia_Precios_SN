@@ -24,7 +24,7 @@ const LoadingProgress = () => {
                         Sincronizando Radar
                         <Sparkles className="w-5 h-5 text-emerald-500 animate-pulse" />
                     </h4>
-                    <p className="text-stone-400 text-[10px] font-black uppercase tracking-[0.2em]">Consultando 14 canales de Retail en Colombia</p>
+                    <p className="text-stone-400 text-[10px] font-black uppercase tracking-[0.2em]">Consultando 16 canales de Retail en Colombia</p>
                 </div>
 
                 <div className="w-full space-y-3">

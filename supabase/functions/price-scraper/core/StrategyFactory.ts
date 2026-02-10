@@ -2,7 +2,6 @@ import { ISearchStrategy } from "../interfaces/ISearchStrategy.ts";
 import { FarmatodoStrategy } from "../strategies/FarmatodoStrategy.ts";
 import { VtexStrategy } from "../strategies/VtexStrategy.ts";
 import { CheerioStrategy } from "../strategies/CheerioStrategy.ts";
-import { DeepLinkStrategy } from "../strategies/DeepLinkStrategy.ts";
 import { InstaleapStrategy } from "../strategies/InstaleapStrategy.ts";
 import { Store } from "../interfaces/IProduct.ts";
 
@@ -85,7 +84,6 @@ export class StrategyFactory {
         // Instaleap / Moira Engine
         d1: { scrapeMethod: 'instaleap', domain: 'domicilios.tiendasd1.com', name: 'Tiendas D1' },
         makro: { scrapeMethod: 'instaleap', domain: 'tienda.makro.com.co', name: 'Makro' },
-        berpa: { scrapeMethod: 'deeplink', name: 'Berpa Supermercados', searchUrl: (q: string) => `https://berpa.com.co/${q}/search` },
         mercaldas: {
             domains: ['www.mercaldas.com'],
             vtexDomain: 'www.mercaldas.com',
@@ -124,8 +122,6 @@ export class StrategyFactory {
                 return new FarmatodoStrategy();
             case 'instaleap':
                 return new InstaleapStrategy(config.domain, config.name);
-            case 'deeplink':
-                return new DeepLinkStrategy(config.name, config.searchUrl);
             default:
                 return null;
         }

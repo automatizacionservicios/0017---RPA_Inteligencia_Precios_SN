@@ -205,7 +205,7 @@ const Home = () => {
                 </div>
               </form>
               <p className="mt-4 text-stone-500 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-                Presiona <span className="text-white">Enter</span> para búsqueda instantánea en 14 canales
+                Presiona <span className="text-white">Enter</span> para búsqueda instantánea en 16 canales
               </p>
             </div>
           </div>
@@ -224,7 +224,7 @@ const Home = () => {
 
             {[
               { num: 1, title: "Busca el EAN", desc: "Identifica el producto con su código de barras.", delay: 0 },
-              { num: 2, title: "Lanza el Robot", desc: "Nuestro scraper consulta 14 tiendas en segundos.", delay: 0.2 },
+              { num: 2, title: "Lanza el Robot", desc: "Nuestro scraper consulta 16 tiendas en segundos.", delay: 0.2 },
               { num: 3, title: "Analiza y Gana", desc: "Exporta y define el mejor precio para Nutresa.", delay: 0.4 }
             ].map((step, idx) => (
               <motion.div

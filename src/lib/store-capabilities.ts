@@ -3,20 +3,21 @@
  * Defines which stores support which search modes (name vs EAN)
  */
 
-// Stores that ONLY work with EAN search (no name search support)
-export const EAN_ONLY_STORES = [
-    'carulla',      // WAF blocked on API
-    'd1',           // Instaleap - EAN only
-    'makro',        // Instaleap - EAN only
-    'berpa',        // DeepLink - EAN only
-    'mercadolibre'  // EAN only
+// Stores that DO NOT work with EAN search (only support name/catalog search)
+export const NO_EAN_STORES = [
+    'carulla',      // WAF blocked on API for EAN search
+    'd1',           // Instaleap - Name only according to user
+    'makro'         // Instaleap - Name only according to user
 ];
 
-// Stores that support name-based search
+// Stores that support name-based search (All 16 stores)
 export const NAME_SEARCH_STORES = [
+    'carulla',
     'jumbo',
     'olimpica',
     'exito',
+    'd1',
+    'makro',
     'euro',
     'vaquita',
     'megatiendas',
@@ -33,20 +34,22 @@ export const NAME_SEARCH_STORES = [
  * Check if a store supports name-based search
  */
 export function canSearchByName(storeId: string): boolean {
-    return NAME_SEARCH_STORES.includes(storeId);
+    return true; // Now all stores support name search
 }
 
 /**
  * Check if a store supports EAN-based search
- * Note: All stores support EAN search
  */
 export function canSearchByEan(storeId: string): boolean {
-    return true; // All stores support EAN
+    return !NO_EAN_STORES.includes(storeId);
 }
 
 /**
- * Check if a store is EAN-only (doesn't support name search)
+ * Check if a store is Name-only (doesn't support EAN search)
  */
-export function isEanOnly(storeId: string): boolean {
-    return EAN_ONLY_STORES.includes(storeId);
+export function isNameOnly(storeId: string): boolean {
+    return NO_EAN_STORES.includes(storeId);
 }
+
+// Keeping legacy export for compatibility if used elsewhere, but with inverted logic
+export const isEanOnly = isNameOnly; 

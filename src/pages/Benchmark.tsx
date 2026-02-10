@@ -5,13 +5,16 @@ import { useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import BenchmarkSearch, { Store, AdvancedOptions } from "@/components/BenchmarkSearch";
+import BenchmarkSearch from "@/components/BenchmarkSearch";
 import BenchmarkResults from "@/components/BenchmarkResults";
 import BenchmarkChart from "@/components/BenchmarkChart";
 import LoadingProgress from "@/components/LoadingProgress";
 import { ParetoInput } from "@/components/ParetoInput";
 import EanSearch from "@/components/EanSearch";
+import { Store, AdvancedOptions } from "@/hooks/useStoreManagement";
+
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+
 import type { BenchmarkResponse, MarketProduct } from "@/types/benchmark";
 
 const Benchmark = () => {
@@ -86,7 +89,7 @@ const Benchmark = () => {
         setIsLoading(true);
 
         // Generar nuevo ID de sesión de búsqueda para Gemini
-        const searchSessionId = `search_${Date.now()}_${btoa(productName || 'catalog').slice(0, 10)}`;
+        const searchSessionId = `search_${Date.now()}_${btoa(encodeURIComponent(productName || 'catalog')).slice(0, 10)}`;
 
         // Limpiar chat de la búsqueda anterior
         const oldSessionId = sessionStorage.getItem('geminiSearchSessionId');
@@ -370,6 +373,8 @@ const Benchmark = () => {
                                                 timestamp={results.timestamp || new Date().toISOString()}
                                                 isEanSearch={activeTab === 'single'}
                                             />
+
+
                                         </div>
                                     </div>
                                 </div>
