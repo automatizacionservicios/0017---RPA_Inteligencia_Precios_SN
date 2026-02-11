@@ -80,15 +80,15 @@ export class RappiStrategy implements ISearchStrategy {
                 const findProductsRecursive = (obj: any) => {
                     if (!obj || typeof obj !== 'object') return;
                     if (Array.isArray(obj)) {
-                        const isProductList = obj.length \u003e 0 \u0026\u0026 obj[0] \u0026\u0026
-                            (obj[0].masterProductId !== undefined || (obj[0].name \u0026\u0026 obj[0].price));
+                        const isProductList = obj.length > 0 && obj[0] &&
+                            (obj[0].masterProductId !== undefined || (obj[0].name && obj[0].price));
                         if (isProductList) {
                             productsRaw = productsRaw.concat(obj);
                         } else {
-                            obj.forEach(item =\u003e findProductsRecursive(item));
+                            obj.forEach(item => findProductsRecursive(item));
                         }
                     } else {
-                        Object.values(obj).forEach(val =\u003e findProductsRecursive(val));
+                        Object.values(obj).forEach(val => findProductsRecursive(val));
                     }
                 };
                 findProductsRecursive(nextData.props || {});
@@ -117,7 +117,7 @@ export class RappiStrategy implements ISearchStrategy {
                     price: price,
                     regularPrice: p.regularPrice || price,
                     discountPercentage: p.hasDiscount ? (p.discountPercentage || 0) : 0,
-                    pricePerGram: grams \u003e 0? price / grams : 0,
+                    pricePerGram: grams > 0 ? price / grams : 0,
                     presentation: p.quantity ? `${p.quantity}${p.unitType || 'und'}` : `${grams}${unit}`,
                     gramsAmount: grams,
                     availability: (p.isAvailable || p.inStock) ? 'Disponible' : 'Agotado',
@@ -130,7 +130,7 @@ export class RappiStrategy implements ISearchStrategy {
                     image: p.image || ''
                 });
 
-                if (results.length \u003e = 20) break;
+                if (results.length >= 20) break;
             }
 
             console.log(`[RAPPI] Found ${results.length} products.`);
