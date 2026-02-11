@@ -59,41 +59,57 @@ export class RappiStrategy implements ISearchStrategy {
 
             const nextData = JSON.parse(nextDataMatch[1]);
 
-            // Navigate to products. 
-            // Based on investigation, they are in pageProps.dehydratedState.queries[0].state.data.products
-            // But we should be defensive and search for product lists recursively if needed.
-
+            // Navigate to products efficiently
             let productsRaw: any[] = [];
+            const fallback = nextData.props?.pageProps?.fallback || {};
 
-            const findProductsRecursive = (obj: any) => {
-                if (!obj || typeof obj !== 'object') return;
-
-                if (Array.isArray(obj)) {
-                    // Check if this array looks like a product list
-                    const isProductList = obj.length > 0 && obj[0] &&
-                        (obj[0].productId || obj[0].ean || (obj[0].name && obj[0].price));
-
-                    if (isProductList) {
-                        productsRaw = productsRaw.concat(obj);
-                    } else {
-                        obj.forEach(item => findProductsRecursive(item));
-                    }
-                } else {
-                    Object.values(obj).forEach(val => findProductsRecursive(val));
+            // Search in all fallback keys (they are dynamic SWR/React-Query keys)
+            for (const key in fallback) {
+                const data = fallback[key];
+                if (data && data.stores && Array.isArray(data.stores)) {
+                    data.stores.forEach((store: any) => {
+                        if (store.products && Array.isArray(store.products)) {
+                            productsRaw = productsRaw.concat(store.products);
+                        }
+                    });
                 }
-            };
+            }
 
-            findProductsRecursive(nextData.props || {});
+            // Fallback to recursive search if fallback search didn't get enough
+            if (productsRaw.length === 0) {
+                const findProductsRecursive = (obj: any) => {
+                    if (!obj || typeof obj !== 'object') return;
+                    if (Array.isArray(obj)) {
+                        const isProductList = obj.length \u003e 0 \u0026\u0026 obj[0] \u0026\u0026
+                            (obj[0].masterProductId !== undefined || (obj[0].name \u0026\u0026 obj[0].price));
+                        if (isProductList) {
+                            productsRaw = productsRaw.concat(obj);
+                        } else {
+                            obj.forEach(item =\u003e findProductsRecursive(item));
+                        }
+                    } else {
+                        Object.values(obj).forEach(val =\u003e findProductsRecursive(val));
+                    }
+                };
+                findProductsRecursive(nextData.props || {});
+            }
 
             const results: ProductResult[] = [];
             const seenIds = new Set<string>();
 
             for (const p of productsRaw) {
-                if (!p.name || seenIds.has(p.productId || p.id)) continue;
-                seenIds.add(p.productId || p.id);
+                const id = p.masterProductId || p.productId || p.id;
+                if (!p.name || !id || seenIds.has(String(id))) continue;
+                seenIds.add(String(id));
 
                 const { amount: grams, unit } = this.extractGrams(p.name);
                 const price = p.price || 0;
+
+                // Construct reliable URL
+                // If slug is missing, /p/[masterProductId] works as a redirect
+                const productUrl = p.slug
+                    ? `https://www.rappi.com.co/p/${p.slug}-${p.masterProductId}`
+                    : `https://www.rappi.com.co/p/${p.masterProductId || p.productId || p.id}`;
 
                 results.push({
                     store: this.storeName,
@@ -101,18 +117,20 @@ export class RappiStrategy implements ISearchStrategy {
                     price: price,
                     regularPrice: p.regularPrice || price,
                     discountPercentage: p.hasDiscount ? (p.discountPercentage || 0) : 0,
-                    pricePerGram: grams > 0 ? price / grams : 0,
+                    pricePerGram: grams \u003e 0? price / grams : 0,
                     presentation: p.quantity ? `${p.quantity}${p.unitType || 'und'}` : `${grams}${unit}`,
                     gramsAmount: grams,
-                    availability: p.isAvailable ? 'Disponible' : 'Agotado',
-                    url: `https://www.rappi.com.co/p/${p.productId || p.id}`,
+                    availability: (p.isAvailable || p.inStock) ? 'Disponible' : 'Agotado',
+                    url: productUrl,
                     verifiedDate: new Date().toISOString().split('T')[0],
-                    brand: p.brand || '',
-                    ean: p.ean || '',
+                    brand: p.brand || p.trademark || '',
+                    // Mapping EAN: Since Rappi doesn't expose it in results, 
+                    // we use the 'ean' parameter if the search was specifically for an EAN.
+                    ean: p.ean || p.barcode || (ean ? ean : ''),
                     image: p.image || ''
                 });
 
-                if (results.length >= 20) break;
+                if (results.length \u003e = 20) break;
             }
 
             console.log(`[RAPPI] Found ${results.length} products.`);
