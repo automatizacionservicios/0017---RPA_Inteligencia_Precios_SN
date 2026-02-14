@@ -22,6 +22,8 @@ export interface ProductResult {
   isExternalLink?: boolean; // For DeepLinkStrategy
   regularPrice?: number; // Precio original sin descuento
   discountPercentage?: number; // Porcentaje de descuento
+  city?: string; // City name for geolocation verification
+  sourceUrl?: string; // The exact URL (API or search) where the price was found
 }
 
 export interface BenchmarkRequest {
@@ -37,4 +39,5 @@ export interface BenchmarkRequest {
   category?: string;
   productLimit?: number; // Max products to fetch per store (default: 20, max: 50)
   isRadar?: boolean; // Flag to enable surgical optimization for Promo Radar
+  locationId?: string; // id of the city for geo-localized search
 }

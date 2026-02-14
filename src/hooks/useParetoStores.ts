@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { getStoresByLocation } from "@/lib/store-coverage";
 
 export interface Store {
     id: string;
@@ -6,7 +7,7 @@ export interface Store {
     enabled: boolean;
 }
 
-export const useParetoStores = () => {
+export const useParetoStores = (locationId: string = 'bogota') => {
     const [stores, setStores] = useState<Store[]>([
         { id: 'jumbo', name: 'Jumbo', enabled: true },
         { id: 'olimpica', name: 'Olímpica', enabled: true },
@@ -23,6 +24,10 @@ export const useParetoStores = () => {
         { id: 'supermu', name: 'Super Mu', enabled: true }
     ]);
 
+    const filteredStores = useMemo(() => {
+        return getStoresByLocation(stores, locationId);
+    }, [stores, locationId]);
+
     const handleStoreToggle = (storeId: string) => {
         setStores(prev => prev.map(s =>
             s.id === storeId ? { ...s, enabled: !s.enabled } : s
@@ -30,9 +35,9 @@ export const useParetoStores = () => {
     };
 
     return {
-        stores,
+        stores: filteredStores,
         setStores,
         handleStoreToggle,
-        enabledStoresCount: stores.filter(s => s.enabled).length
+        enabledStoresCount: filteredStores.filter(s => s.enabled).length
     };
 };

@@ -1,6 +1,13 @@
 import { ISearchStrategy } from "../interfaces/ISearchStrategy.ts";
 import { ProductResult } from "../interfaces/IProduct.ts";
+import { extractGrams } from "../core/utils.ts";
 
+/**
+ * Estrategia de búsqueda para Farmatodo.
+ * 
+ * Utiliza la API de búsqueda de Algolia que proporciona Farmatodo en su sitio web.
+ * Es altamente eficiente y devuelve datos estructurados incluyendo EANs y marcas.
+ */
 export class FarmatodoStrategy implements ISearchStrategy {
     private config = {
         appId: 'VCOJEYD2PO',
@@ -8,10 +15,18 @@ export class FarmatodoStrategy implements ISearchStrategy {
         indexName: 'products'
     };
 
-    async search(query: string, ean?: string): Promise<ProductResult[]> {
+    /**
+     * Realiza la búsqueda de productos en Farmatodo mediante Algolia.
+     * 
+     * @param query - Término de búsqueda.
+     * @param ean - (Opcional) EAN para búsqueda directa.
+     * @param _timeout - Tiempo límite.
+     * @returns Una lista de productos normalizados.
+     */
+    async search(query: string, ean?: string, _timeout?: number): Promise<ProductResult[]> {
         const url = `https://${this.config.appId.toLowerCase()}-dsn.algolia.net/1/indexes/*/queries`;
 
-        // Prioritize EAN if available, Algolia handles it well usually
+        // Priorizar EAN para mayor precisión si está presente
         const searchQuery = ean || query;
 
         const payload = {
@@ -39,7 +54,7 @@ export class FarmatodoStrategy implements ISearchStrategy {
             });
 
             if (!res.ok) {
-                console.error(`FarmatodoStrategy: Fetch failed ${res.status}`);
+                console.error(`[FARMATODO] Falló fetch: ${res.status}`);
                 return [];
             }
 
@@ -47,38 +62,43 @@ export class FarmatodoStrategy implements ISearchStrategy {
             const hits = data.results?.[0]?.hits || [];
 
             return hits.map((hit: any) => {
-                const price = hit.fullPrice || hit.price || 0;
-                // Use description or name, handle potential missing fields
+                const price = hit.price || hit.fullPrice || 0;
+                const regularPrice = hit.priceOriginal || hit.fullPrice || hit.oldPrice || price;
                 const productName = hit.description || hit.mediaDescription || hit.name || '';
                 const productUrl = hit.slug
                     ? `https://www.farmatodo.com.co/p/${hit.slug}`
                     : `https://www.farmatodo.com.co/producto/${hit.id || hit.objectID}`;
 
-                // Simple extraction, can utilize the util helper if we move it to a shared place later
-                const gramsMatch = productName.match(/(\d+(?:\.\d+)?)\s*(g|gr|gramos|kg|ml|lt?|litros?|lb|libra|und|unidades)/i);
-                const gramsAmount = gramsMatch ? parseFloat(gramsMatch[1]) * (gramsMatch[2].toLowerCase().startsWith('k') ? 1000 : 1) : 1;
+                // Usamos la utilidad centralizada para extraer gramos/ml
+                const { amount: grams, unit } = extractGrams(productName);
+
+                const discountPercentage = regularPrice > price ? Math.round(((regularPrice - price) / regularPrice) * 100) : 0;
 
                 return {
                     store: 'FARMATODO',
                     productName: productName,
                     price: price,
-                    pricePerGram: price / gramsAmount,
-                    presentation: gramsMatch ? `${gramsMatch[1]}${gramsMatch[2]}` : 'Und',
-                    gramsAmount: gramsAmount,
+                    regularPrice: regularPrice,
+                    discountPercentage: discountPercentage,
+                    pricePerGram: price / (grams || 1),
+                    presentation: `${grams}${unit}`,
+                    gramsAmount: grams,
                     availability: (hit.hasStock && !hit.outofstore) ? 'Disponible' : 'Agotado',
                     url: productUrl,
                     verifiedDate: new Date().toISOString().split('T')[0],
                     brand: hit.marca || hit.brand || '',
                     ean: hit.barcode || hit.barcodeList?.[0] || '',
-                    image: hit.image || hit.thumbnail || hit.image_url || hit.mediaDescription || '' // Algolia often has images
+                    image: hit.image || hit.image_url || hit.thumbnail || '',
+                    sourceUrl: url
                 };
             });
 
         } catch (e) {
-            console.error(`FarmatodoStrategy: Error ${e}`);
+            console.error(`[FARMATODO] Error: ${e}`);
             return [];
         }
     }
 }
+
 
 

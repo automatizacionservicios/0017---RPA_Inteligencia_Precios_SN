@@ -19,10 +19,17 @@ export interface MarketProduct {
 }
 
 export interface BenchmarkMetadata {
+  searchedLocation?: {
+    id: string;
+    name: string;
+    coordinates: { lat: number; lng: number };
+  } | null;
+  totalResults?: number;
+  queriedStores?: number;
   searchesPerformed?: number; // Número de búsquedas ejecutadas en el proceso
   sourcesEvaluated?: number; // Cantidad de fuentes/sitios evaluados
   confidenceLevel?: string; // Nivel de confianza agregado del resultado
-  model: string; // Modelo de IA utilizado para la evaluación
+  model?: string; // Modelo de IA utilizado para la evaluación
   validation?: {
     totalScraped: number; // Total de ítems extraídos del scraping inicial
     validated: number; // Ítems validados por las reglas/IA

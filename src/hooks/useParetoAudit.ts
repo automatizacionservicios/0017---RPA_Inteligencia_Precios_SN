@@ -9,6 +9,7 @@ interface UseParetoAuditProps {
     stores: { id: string, name: string, enabled: boolean }[];
     onResultsFound: (results: MarketProduct[]) => void;
     searchMode: 'best-price' | 'full-list';
+    locationId: string;
 }
 
 export const useParetoAudit = ({
@@ -16,7 +17,8 @@ export const useParetoAudit = ({
     setItems,
     stores,
     onResultsFound,
-    searchMode
+    searchMode,
+    locationId
 }: UseParetoAuditProps) => {
     const [isAuditing, setIsAuditing] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
@@ -78,7 +80,8 @@ export const useParetoAudit = ({
                     advancedOptions: {
                         searchRecency: 'month',
                         deepResearch: false
-                    }
+                    },
+                    locationId: locationId
                 };
 
                 const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/price-scraper`, {

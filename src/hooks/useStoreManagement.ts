@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { toast } from "sonner";
-import { isEanOnly, canSearchByEan } from "@/lib/store-capabilities";
+import { canSearchByEan } from "@/lib/store-capabilities";
+import { getStoresByLocation } from "@/lib/store-coverage";
 
 export interface Store {
     id: string;
@@ -44,8 +45,10 @@ export const useStoreManagement = (isRadar: boolean, activeTab: string) => {
     ]);
 
     const visibleStores = useMemo(() => {
-        if (activeTab === 'name') return stores; // All stores support Name search (16)
-        return stores.filter(s => canSearchByEan(s.id)); // Only some support EAN (13)
+        // Con la refactorización nacional, ya no filtramos por ubicación
+        const allStores = getStoresByLocation(stores, 'national');
+        if (activeTab === 'name') return allStores; // All supported by Name
+        return allStores.filter(s => canSearchByEan(s.id)); // Only some support EAN
     }, [stores, activeTab]);
 
 
@@ -61,15 +64,22 @@ export const useStoreManagement = (isRadar: boolean, activeTab: string) => {
     };
 
     const handleSelectAllStores = () => {
-        const allEnabled = stores.every(s => s.enabled);
-        setStores(prev => prev.map(s => ({ ...s, enabled: !allEnabled })));
+        const allEnabled = filteredStores.every(s => s.enabled);
+        setStores(prev => prev.map(s => {
+            // Only affect stores visible in current tab
+            if (filteredStores.some(fs => fs.id === s.id)) {
+                return { ...s, enabled: !allEnabled };
+            }
+            return s;
+        }));
     };
 
     return {
-        stores,
+        stores: visibleStores,
         filteredStores,
         handleStoreToggle,
         handleSelectAllStores,
         enabledStoresCount: filteredStores.filter(s => s.enabled).length
     };
 };
+

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,10 +7,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { getStoreBrand } from "@/lib/store-branding";
 import { Badge } from "@/components/ui/badge";
 import type { Store } from "@/hooks/useStoreManagement";
-
-
+import { getStoresByLocation } from "@/lib/store-coverage";
 interface EanSearchProps {
-    onSearch: (productName: string, ean: string | undefined, selectedStores: Store[]) => void;
+    onSearch: (productName: string, ean: string | undefined, selectedStores: Store[]) => void | Promise<void>;
     isLoading: boolean;
 }
 
@@ -35,15 +34,20 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
         { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true, urls: ['mundohuevo.com'] },
         { id: 'farmatodo', name: 'Farmatodo', enabled: true, urls: ['farmatodo.com.co'] },
         { id: 'mercaldas', name: 'Mercaldas', enabled: true, urls: ['mercaldas.com'] },
-        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] }
+        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] },
+        { id: 'rappi', name: 'Rappi', enabled: true, urls: ['rappi.com.co'] }
     ]);
+
+    const filteredStores = useMemo(() => {
+        return getStoresByLocation(stores, 'national');
+    }, [stores]);
 
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!productName.trim()) return;
 
-        const selectedStores = stores.filter(s => s.enabled);
+        const selectedStores = filteredStores.filter(s => s.enabled);
         onSearch(productName.trim(), eanCode.trim() || undefined, selectedStores);
     };
 
@@ -54,8 +58,13 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
     };
 
     const toggleAll = () => {
-        const allEnabled = stores.every(s => s.enabled);
-        setStores(stores.map(s => ({ ...s, enabled: !allEnabled })));
+        const allEnabled = filteredStores.every(s => s.enabled);
+        setStores(stores.map(s => {
+            if (filteredStores.some(fs => fs.id === s.id)) {
+                return { ...s, enabled: !allEnabled };
+            }
+            return s;
+        }));
     };
 
     return (
@@ -70,13 +79,15 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                         <Sparkles className="w-8 h-8 text-emerald-600" />
                     </div>
                     <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                            <h2 className="text-2xl font-black text-stone-900 uppercase tracking-tight">
-                                Localizador de EAN
-                            </h2>
-                            <Badge className="bg-emerald-600 text-white font-black text-[9px] px-2 py-0.5">
-                                INTELIGENTE
-                            </Badge>
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-2xl font-black text-stone-900 uppercase tracking-tight">
+                                    Localizador de EAN
+                                </h2>
+                                <Badge className="bg-emerald-600 text-white font-black text-[9px] px-2 py-0.5">
+                                    INTELIGENTE
+                                </Badge>
+                            </div>
                         </div>
                         <p className="text-sm font-bold text-emerald-900/70 leading-relaxed mb-3">
                             Busca productos por nombre y descubre sus códigos EAN/GTIN en el mercado
@@ -154,19 +165,19 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
             <div className="space-y-6">
                 <div className="flex items-center justify-between px-1">
                     <Label className="text-xs font-black text-stone-400 uppercase tracking-[0.2em]">
-                        Red de Búsqueda ({stores.filter(s => s.enabled).length})
+                        Red de Búsqueda ({filteredStores.filter(s => s.enabled).length})
                     </Label>
                     <button
                         type="button"
                         onClick={toggleAll}
                         className="text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
                     >
-                        {stores.every(s => s.enabled) ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                        {filteredStores.every(s => s.enabled) ? 'Deseleccionar todos' : 'Seleccionar todos'}
                     </button>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                    {stores.map((store) => {
+                    {filteredStores.map((store) => {
                         const branding = getStoreBrand(store.id);
                         return (
                             <label
@@ -219,7 +230,7 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                 ) : (
                     <div className="flex items-center gap-3">
                         <Sparkles className="w-5 h-5" />
-                        <span className="font-black tracking-[0.2em] text-xs">BUSCAR CÓDIGOS EAN • {stores.filter(s => s.enabled).length} TIENDAS</span>
+                        <span className="font-black tracking-[0.2em] text-xs">BUSCAR CÓDIGOS EAN • {filteredStores.filter(s => s.enabled).length} TIENDAS</span>
                     </div>
                 )}
             </Button>

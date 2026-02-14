@@ -3,71 +3,51 @@ import { ProductResult } from "../interfaces/IProduct.ts";
 import { extractGrams, getStandardHeaders } from "../core/utils.ts";
 import cheerio from "https://esm.sh/cheerio@1.0.0-rc.12";
 
+/**
+ * Estrategia de búsqueda basada en Scraping estático (Cheerio).
+ * 
+ * Se utiliza para tiendas que no exponen una API pública clara o que renderizan
+ * su contenido en el servidor (SSR). Extrae información directamente del HTML.
+ */
 export class CheerioStrategy implements ISearchStrategy {
     private config: any;
     private storeName: string;
 
+    /**
+     * @param config - Configuración específica de la tienda (selectores, dominios).
+     * @param storeName - Nombre identificador de la tienda.
+     */
     constructor(config: any, storeName: string) {
         this.config = config;
         this.storeName = storeName;
     }
 
-
-
-    private extractGrams(text: string): { amount: number, unit: string } {
-        if (!text) return { amount: 250, unit: 'g' };
-        const match = text.match(/(\d+(?:[.,]\d+)?)\s*(g|gr|gramos|kg|ml|lt?|litros?|lb|libra|und|unidades)/i);
-        if (!match) {
-            const lMatch = text.match(/(\d+)\s*L(itro)?\b/i);
-            if (lMatch) return { amount: parseFloat(lMatch[1]) * 1000, unit: 'ml' };
-            return { amount: 250, unit: 'g' };
-        }
-        let val = parseFloat(match[1].replace(',', '.'));
-        const unitStr = match[2].toLowerCase();
-        if (unitStr.startsWith('kg') || unitStr === 'l' || unitStr.startsWith('litro')) {
-            if (unitStr !== 'lb' && unitStr !== 'libra') {
-                return { amount: val * 1000, unit: (unitStr.startsWith('l') || unitStr.includes('lt')) ? 'ml' : 'g' };
-            }
-        }
-        if (unitStr.startsWith('lb')) return { amount: val * 500, unit: 'g' };
-        const finalUnit = (unitStr.startsWith('m') || unitStr.startsWith('l')) ? 'ml' : (unitStr.startsWith('u') ? 'und' : 'g');
-        if (finalUnit === 'und') return { amount: val, unit: 'und' };
-        return { amount: val, unit: finalUnit };
-    }
-
+    /**
+     * Realiza la búsqueda de productos raspando el sitio web de la tienda a nivel nacional.
+     * 
+     * @param query - Término de búsqueda o nombre del producto.
+     * @param ean - (Opcional) EAN específico para filtrar o buscar.
+     * @param timeout - Tiempo máximo de espera para la petición.
+     * @returns Una lista de productos encontrados y normalizados.
+     */
     async search(query: string, ean?: string, timeout?: number): Promise<ProductResult[]> {
         try {
-            const isEan = /^\d{8,14}$/.test(query);
             const searchBase = this.config.searchPath || '/?s=';
             const safeQuery = query || 'carnes';
             const cleanQuery = safeQuery.replace(/[()]/g, '').replace(/\s+/g, ' ').trim();
-            const url = `https://${this.config.domains[0]}${searchBase}${encodeURIComponent(cleanQuery)}`;
+            const domain = this.config.domains[0];
+            const url = `https://${domain}${searchBase}${encodeURIComponent(cleanQuery).replace(/%20/g, '+')}`;
 
-            console.log(`[CHEERIO] ${this.storeName} scraping: ${url}`);
+            console.log(`[CHEERIO] ${this.storeName} raspando: ${url}`);
 
             const controller = new AbortController();
-            const fetchTimeout = setTimeout(() => controller.abort(), timeout || 10000);
+            const fetchTimeout = setTimeout(() => controller.abort(), timeout || 15000);
+
             let res;
             try {
                 res = await fetch(url, {
                     signal: controller.signal,
-                    headers: {
-                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
-                        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                        'Accept-Language': 'es-ES,es;q=0.9,en;q=0.8',
-                        'Accept-Encoding': 'identity',
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache',
-                        'Referer': 'https://www.google.com/',
-                        'Sec-Ch-Ua': '"Not A(Brand";v="99", "Google Chrome";v="121", "Chromium";v="121"',
-                        'Sec-Ch-Ua-Mobile': '?0',
-                        'Sec-Ch-Ua-Platform': '"Windows"',
-                        'Sec-Fetch-Dest': 'document',
-                        'Sec-Fetch-Mode': 'navigate',
-                        'Sec-Fetch-Site': 'cross-site',
-                        'Sec-Fetch-User': '?1',
-                        'Upgrade-Insecure-Requests': '1'
-                    }
+                    headers: getStandardHeaders(domain, false)
                 });
             } finally {
                 clearTimeout(fetchTimeout);
@@ -75,36 +55,72 @@ export class CheerioStrategy implements ISearchStrategy {
 
             if (!res.ok) return [];
 
-            const blob = await res.blob();
-            if (blob.size > 4 * 1024 * 1024) return [];
-
-            const html = await blob.text();
+            const html = await res.text();
             const $ = cheerio.load(html);
-            let products: ProductResult[] = [];
-
+            const products: ProductResult[] = [];
             const cards = $(this.config.selectors.productCard);
 
-            cards.slice(0, 15).each((i: number, el: any) => {
+            cards.slice(0, 15).each((_i: number, el: any) => {
                 try {
                     const name = $(el).find(this.config.selectors.name).first().text().trim();
-                    const priceText = $(el).find(this.config.selectors.price).first().text().trim();
-                    const regularPriceText = this.config.selectors.regularPrice ? $(el).find(this.config.selectors.regularPrice).first().text().trim() : null;
+
+                    // Lógica mejorada de extracción de precios
+                    let priceHtml = $(el).find(this.config.selectors.price).first();
+                    let priceText = '';
+                    let regularPriceText = '';
+
+                    // Si detectamos modo oferta por clase o por tener múltiples spans interiores
+                    if (priceHtml.hasClass('price--sale') || priceHtml.find('span').length >= 2) {
+                        const spans = priceHtml.find('span');
+                        if (spans.length >= 2) {
+                            // En Shopify/SuperMu, el primero suele ser el original (regular) y el segundo el actual
+                            regularPriceText = $(spans[0]).text().trim();
+                            priceText = $(spans[1]).text().trim();
+                        } else {
+                            priceText = priceHtml.text().trim();
+                        }
+                    } else {
+                        priceText = priceHtml.text().trim();
+                    }
+
+                    // Fallback para regularPrice si el selector explícito existe y no lo hemos llenado
+                    if (!regularPriceText && this.config.selectors.regularPrice) {
+                        const regPriceEl = $(el).find(this.config.selectors.regularPrice).first();
+                        regularPriceText = regPriceEl.text().trim();
+                    }
+
+                    // Limpieza: si el texto del precio contiene el texto del precio regular, lo quitamos
+                    if (regularPriceText && priceText.includes(regularPriceText)) {
+                        priceText = priceText.replace(regularPriceText, '').trim();
+                    }
 
                     if (!name || !priceText) return;
 
-                    const price = this.config.transforms?.price ? this.config.transforms.price(priceText) : parseFloat(priceText.replace(/[^\d]/g, ''));
-                    const regularPrice = regularPriceText ? (this.config.transforms?.price ? this.config.transforms.price(regularPriceText) : parseFloat(regularPriceText.replace(/[^\d]/g, ''))) : price;
+                    // Conversión numérica
+                    const price = this.config.transforms?.price ?
+                        this.config.transforms.price(priceText) :
+                        parseFloat(priceText.replace(/[^\d]/g, ''));
+
+                    let regularPrice = price;
+                    if (regularPriceText) {
+                        regularPrice = this.config.transforms?.price ?
+                            this.config.transforms.price(regularPriceText) :
+                            parseFloat(regularPriceText.replace(/[^\d]/g, ''));
+                    }
+
                     const discountPercentage = regularPrice > price ? Math.round(((regularPrice - price) / regularPrice) * 100) : 0;
 
                     if (!price || price < 50) return;
 
-                    const { amount: grams, unit } = this.extractGrams(name);
+
+                    const { amount: grams, unit } = extractGrams(name);
+
                     let link = $(el).find(this.config.selectors.url || 'a').attr('href') || '';
                     if (link && !link.startsWith('http')) {
                         try {
                             link = new URL(link, url).href;
-                        } catch (e) {
-                            link = `https://${this.config.domains[0]}${link.startsWith('/') ? '' : '/'}${link}`;
+                        } catch (_e) {
+                            link = `https://${domain}${link.startsWith('/') ? '' : '/'}${link}`;
                         }
                     }
 
@@ -113,57 +129,47 @@ export class CheerioStrategy implements ISearchStrategy {
                         brand = $(el).find(this.config.selectors.brand).text().trim();
                     }
 
-                    // Extract image
                     let image = '';
-                    if (this.config.selectors.image) {
-                        const imgEl = $(el).find(this.config.selectors.image).first();
-                        image = imgEl.attr('data-master') ||
+                    const imgSelectors = [this.config.selectors.image, 'img'];
+                    for (const sel of imgSelectors) {
+                        if (!sel) continue;
+                        const imgEl = $(el).find(sel).first();
+
+                        // Prioridad para atributos de alta resolución y evitar placeholders base64
+                        const rawImage = imgEl.attr('data-master') ||
+                            imgEl.attr('data-srcset')?.split(',')[0].split(' ')[0] ||
+                            imgEl.attr('srcset')?.split(',')[0].split(' ')[0] ||
                             imgEl.attr('data-original') ||
-                            imgEl.attr('data-srcset')?.split(' ')[0] ||
                             imgEl.attr('src') ||
                             imgEl.attr('data-src') || '';
 
-                        // Clean data-master {width} placeholder
-                        if (image.includes('{width}')) {
-                            image = image.replace('{width}', '600');
+                        // Si es un placeholder base64 transparente, intentamos con el siguiente atributo si hay alguno más
+                        if (rawImage.startsWith('data:image/gif;base64') || rawImage.startsWith('data:image/png;base64')) {
+                            const fallbackImage = imgEl.attr('data-srcset')?.split(',')[0].split(' ')[0] ||
+                                imgEl.attr('srcset')?.split(',')[0].split(' ')[0] ||
+                                imgEl.attr('data-src') || '';
+                            if (fallbackImage && !fallbackImage.startsWith('data:')) {
+                                image = fallbackImage;
+                            }
+                        } else {
+                            image = rawImage;
                         }
-                    } else {
-                        // Heuristic for Shopify/General images
-                        const firstImg = $(el).find('img').first();
-                        image = firstImg.attr('data-master') ||
-                            firstImg.attr('data-original') ||
-                            firstImg.attr('data-srcset')?.split(' ')[0] ||
-                            firstImg.attr('src') ||
-                            firstImg.attr('data-src') || '';
 
-                        if (image.includes('{width}')) {
-                            image = image.replace('{width}', '600');
-                        }
+                        if (image) break;
                     }
 
+
+                    if (image.includes('{width}')) image = image.replace('{width}', '600');
                     if (image && !image.startsWith('http')) {
                         image = `https:${image.startsWith('//') ? '' : '//'}${image.replace(/^\/\//, '')}`;
                     }
 
-                    if (priceText === "00" || priceText === "0" || price <= 1) return;
-
-                    // --- INTELLIGENT EAN EXTRACTION ---
-                    // Strategy: 
-                    // 1. If searching by EAN (Pareto use case), assign it to all products
-                    // 2. Otherwise, try to extract EAN from product URL
-                    // 3. Fallback to empty if not found
                     let productEan = '';
-
                     if (ean && /^\d{8,14}$/.test(ean)) {
-                        // Case 1: EAN search (Pareto bulk load)
                         productEan = ean;
                     } else if (link) {
-                        // Case 2: Extract from URL
-                        // Match 8, 12, or 13 digit sequences (common EAN formats)
                         const eanMatch = link.match(/\b(\d{13}|\d{12}|\d{8})\b/);
-                        if (eanMatch) {
-                            productEan = eanMatch[1];
-                        }
+                        if (eanMatch) productEan = eanMatch[1];
                     }
 
                     products.push({
@@ -179,16 +185,21 @@ export class CheerioStrategy implements ISearchStrategy {
                         url: link,
                         verifiedDate: new Date().toISOString().split('T')[0],
                         brand: brand || '',
-                        ean: productEan, // ✅ Now intelligently extracted
-                        image
+                        ean: productEan,
+                        image,
+                        sourceUrl: url
                     });
-                } catch (e) { }
+                } catch (_e) {
+                    // Ignorar errores en tarjetas individuales
+                }
             });
 
             return products;
         } catch (e) {
-            console.error(`[CHEERIO] Error: ${e}`);
+            console.error(`[CHEERIO] Error en ${this.storeName}: ${e}`);
             return [];
         }
     }
 }
+
+

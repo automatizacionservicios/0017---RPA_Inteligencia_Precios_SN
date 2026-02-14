@@ -13,7 +13,7 @@ import { ParetoInput } from "@/components/ParetoInput";
 import EanSearch from "@/components/EanSearch";
 import { Store, AdvancedOptions } from "@/hooks/useStoreManagement";
 
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 import type { BenchmarkResponse, MarketProduct } from "@/types/benchmark";
 
@@ -300,7 +300,9 @@ const Benchmark = () => {
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <ParetoInput onResultsFound={handleParetoResults} />
+                                        <ParetoInput
+                                            onResultsFound={handleParetoResults}
+                                        />
                                     </motion.div>
                                 )}
                             </AnimatePresence>
@@ -348,6 +350,12 @@ const Benchmark = () => {
                                 </button>
                             </DialogTrigger>
                             <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-stone-50 border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+                                <DialogHeader className="sr-only">
+                                    <DialogTitle>Market Intelligence Report</DialogTitle>
+                                    <DialogDescription>
+                                        Detailed analysis of product results and market intelligence.
+                                    </DialogDescription>
+                                </DialogHeader>
                                 <div className="h-full flex flex-col overflow-hidden">
                                     {/* Modal Header */}
                                     <div className="shrink-0 p-8 bg-white border-b border-stone-100 flex items-center justify-center relative">

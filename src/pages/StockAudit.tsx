@@ -16,6 +16,12 @@ const StockAudit = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [results, setResults] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState("");
+    const [locationId, setLocationId] = useState(() => localStorage.getItem("selectedLocationId") || "bogota");
+
+    const handleLocationChange = (newId: string) => {
+        setLocationId(newId);
+        localStorage.setItem("selectedLocationId", newId);
+    };
 
     const handleSearch = async (
         searchMode: 'product' | 'store-catalog',
@@ -28,8 +34,11 @@ const StockAudit = () => {
         keywords?: string[],
         ean?: string,
         brand?: string,
-        category?: string
+        category?: string,
+        productLimit?: number,
+        selectedLocationId?: string
     ) => {
+        const locId = selectedLocationId || locationId;
         setIsLoading(true);
         setSearchTerm(productName || ean || "");
         setResults(null);
@@ -49,7 +58,8 @@ const StockAudit = () => {
                     keywords,
                     ean,
                     brand,
-                    category
+                    category,
+                    locationId: locId
                 })
             });
 
@@ -100,6 +110,8 @@ const StockAudit = () => {
                             isLoading={isLoading}
                             mode="product"
                             isRadar={true}
+                            locationId={locationId}
+                            setLocationId={handleLocationChange}
                         />
                     </motion.div>
 

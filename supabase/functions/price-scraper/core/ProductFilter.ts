@@ -1,15 +1,32 @@
-import { normalizeText } from "./utils.ts";
+import { normalizeText, extractGrams } from "./utils.ts";
 
+/**
+ * Filtro de Productos (ProductFilter).
+ * 
+ * Se encarga de procesar los resultados brutos de los scrapers para asegurar
+ * que coincidan con los criterios de búsqueda (palabras clave, marcas, categorías)
+ * y de ordenarlos por precio.
+ */
 export class ProductFilter {
     /**
-     * Normalizes text for comparison using the shared utility.
+     * Normaliza texto para comparaciones consistentes.
+     * @param text - Texto a normalizar.
      */
     static normalizeText(text: string): string {
         return normalizeText(text);
     }
 
     /**
-     * Filters and sorts products based on a query and keyword matching.
+     * Filtra y ordena productos basándose en la consulta y palabras clave.
+     * 
+     * Implementa una lógica de coincidencia estricta: todos los tokens significativos
+     * de la consulta deben estar presentes en el nombre o marca del producto.
+     * 
+     * @param products - Lista de productos a filtrar.
+     * @param query - Término de búsqueda original.
+     * @param keywords - Palabras clave adicionales obligatorias.
+     * @param brand - Marca específica requerida.
+     * @param category - Categoría sugerida (informativa).
      */
     static filterProducts(
         products: any[],
@@ -23,7 +40,7 @@ export class ProductFilter {
         const normalizedBrand = brand ? this.normalizeText(brand) : "";
         const normalizedCategory = category ? this.normalizeText(category) : "";
 
-        // SIGNIFICANT TOKENS: terms with 3+ characters from the query
+        // TOKENS SIGNIFICATIVOS: términos de 3+ caracteres de la consulta
         const queryTokens = normalizedQuery.split(/\s+/).filter(t => t.length >= 3);
         const brandTokens = normalizedBrand.split(/\s+/).filter(t => t.length >= 2);
         const categoryTokens = normalizedCategory.split(/\s+/).filter(t => t.length >= 3);
@@ -34,31 +51,26 @@ export class ProductFilter {
                 const pBrand = this.normalizeText(product.brand || "");
                 const combinedText = `${name} ${pBrand}`;
 
-                // 1. Mandatory requirement: All explicit keywords (if any)
+                // 1. Requisito obligatorio: Todas las palabras clave explícitas (si existen)
                 if (normalizedKeywords.length > 0) {
                     const allKeywordsMatch = normalizedKeywords.every(k => combinedText.includes(k));
                     if (!allKeywordsMatch) return false;
                 }
 
-                // 2. Strict Search: Each token from the productName query MUST be present
+                // 2. Búsqueda estricta: Cada token del nombre de la consulta DEBE estar presente
                 if (queryTokens.length > 0) {
                     const allQueryTokensMatch = queryTokens.every(token => combinedText.includes(token));
                     if (!allQueryTokensMatch) return false;
                 }
 
-                // 3. Brand Filter: If user specified a brand, it MUST be present (if not already matched)
+                // 3. Filtro de Marca: Si se especifica, DEBE estar presente
                 if (brandTokens.length > 0) {
                     const allBrandTokensMatch = brandTokens.every(token => combinedText.includes(token));
                     if (!allBrandTokensMatch) return false;
                 }
 
-                // 4. Category Filter: Optional but supportive
-                if (categoryTokens.length > 0) {
-                    const anyCategoryMatch = categoryTokens.some(token => combinedText.includes(token));
-                    // We don't discard if category doesn't match for now (to be safe), 
-                    // unless you want it strictly. User said "apoye en la busqueda".
-                    // For now, only query and brand are strict.
-                }
+                // 4. Filtro de Categoría: Es opcional/informativo por ahora
+                // Se podría expandir para dar peso extra pero no excluye resultados.
 
                 return true;
             })
@@ -66,14 +78,15 @@ export class ProductFilter {
     }
 
     /**
-     * Processes grams/units to facilitate comparison.
-     * (Logic placeholder based on CheerioStrategy)
+     * Extrae especificaciones (gramaje) de un nombre de producto.
+     * @deprecated Utilizar `extractGrams` de `utils.ts` para lógica más robusta.
      */
     static extractSpecs(name: string) {
-        const gramsMatch = name.match(/(\d+)\s*(g|gr|kg|ml|l|lb)/i);
+        const { amount, unit } = extractGrams(name);
         return {
-            size: gramsMatch ? gramsMatch[0] : null,
-            value: gramsMatch ? parseInt(gramsMatch[1]) : null
+            size: `${amount}${unit}`,
+            value: amount
         };
     }
 }
+

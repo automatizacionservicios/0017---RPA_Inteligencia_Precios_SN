@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CheckCircle2, LayoutDashboard, Sparkles, Info } from "lucide-react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ProductCard } from "./ProductCard";
 import BenchmarkResults from "@/components/BenchmarkResults";
 import type { BenchmarkResponse } from "@/types/benchmark";
@@ -43,6 +43,12 @@ export const SearchResultsModal = ({ results, isOpen, onOpenChange }: SearchResu
                     </button>
                 </DialogTrigger>
                 <DialogContent className="max-w-[95vw] w-[1400px] h-[90vh] p-0 bg-stone-50 border-none shadow-2xl rounded-[2.5rem] overflow-hidden">
+                    <DialogHeader className="sr-only">
+                        <DialogTitle>Radar Referencial Panel</DialogTitle>
+                        <DialogDescription>
+                            Visualization of market radar results with direct and external access.
+                        </DialogDescription>
+                    </DialogHeader>
                     <div className="h-full flex flex-col overflow-hidden">
                         <div className="shrink-0 p-8 bg-white border-b border-stone-100 flex items-center justify-between">
                             <div className="flex items-center gap-4">

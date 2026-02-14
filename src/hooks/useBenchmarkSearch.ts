@@ -8,7 +8,20 @@ interface UseBenchmarkSearchProps {
     isLoading: boolean;
     stores: Store[];
     advancedOptions: AdvancedOptions;
-    onSearch: any;
+    onSearch: (
+        searchMode: 'product' | 'store-catalog',
+        productName: string,
+        productType: string,
+        presentation: string,
+        selectedStores: Store[],
+        advancedOptions: AdvancedOptions,
+        storeId?: string,
+        keywords?: string[],
+        ean?: string,
+        brand?: string,
+        category?: string,
+        productLimit?: number
+    ) => void;
     activeTab: string;
     setActiveTab: (tab: string) => void;
 }
@@ -118,6 +131,7 @@ export const useBenchmarkSearch = ({
             catalogLimit
         );
     };
+
 
     return {
         productName, setProductName,

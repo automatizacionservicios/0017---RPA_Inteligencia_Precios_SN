@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Search, Info, Plus, X, Store as StoreIcon, Beef, Barcode, Tag, Settings2, ArrowRight } from "lucide-react";
+import { Search, Info, Plus, X, Store as StoreIcon, Beef, Barcode, Tag, Settings2, ArrowRight, MapPin } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
@@ -20,8 +20,6 @@ import { isEanOnly } from "@/lib/store-capabilities";
 import { useStoreManagement, manualStoreIds, type Store, type AdvancedOptions } from "@/hooks/useStoreManagement";
 import { useBenchmarkSearch } from "@/hooks/useBenchmarkSearch";
 import { StoreCard } from "./benchmark/StoreCard";
-
-
 interface BenchmarkSearchProps {
     onSearch: (
         searchMode: 'product' | 'store-catalog',
@@ -36,7 +34,7 @@ interface BenchmarkSearchProps {
         brand?: string,
         category?: string,
         productLimit?: number
-    ) => void;
+    ) => void | Promise<void>;
     isLoading: boolean;
     initialSearch?: string | null;
     mode?: 'product' | 'catalog';
@@ -311,16 +309,18 @@ const BenchmarkSearch = ({
             ) : (
                 /* ============ SECCIÓN 2: BÚSQUEDA POR TIENDA/CATÁLOGO ============ */
                 <div className="max-w-3xl mx-auto">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="p-3.5 rounded-2xl bg-white border border-stone-100 shadow-sm text-amber-600">
-                            <StoreIcon className="w-6 h-6" />
-                        </div>
-                        <div>
-                            <h3 className="text-2xl font-black text-stone-800 uppercase tracking-tight leading-none">Explorador de Catálogo</h3>
-                            <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
-                                <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                Indexación selectiva por canal
-                            </p>
+                    <div className="flex items-center justify-between mb-8">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3.5 rounded-2xl bg-white border border-stone-100 shadow-sm text-amber-600">
+                                <StoreIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-2xl font-black text-stone-800 uppercase tracking-tight leading-none">Explorador de Catálogo</h3>
+                                <p className="text-[11px] font-bold text-stone-400 uppercase tracking-widest mt-1.5 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                    Indexación selectiva por canal
+                                </p>
+                            </div>
                         </div>
                     </div>
 

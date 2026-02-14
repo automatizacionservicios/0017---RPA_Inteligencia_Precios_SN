@@ -23,7 +23,7 @@ import { DataIngestionCards } from "./pareto/DataIngestionCards";
 import { AuditStatusCard } from "./pareto/AuditStatusCard";
 import { ParetoResultsTable } from "./pareto/ParetoResultsTable";
 import { SheetSelectorDialog } from "./pareto/SheetSelectorDialog";
-
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 interface ParetoInputProps {
     onResultsFound: (results: MarketProduct[]) => void;
 }
@@ -45,7 +45,7 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
         toggleAllItems
     } = useParetoData();
 
-    const { stores, handleStoreToggle, enabledStoresCount } = useParetoStores();
+    const { stores, handleStoreToggle, enabledStoresCount } = useParetoStores('national');
 
     const [searchMode, setSearchMode] = useState<'best-price' | 'full-list'>('full-list');
     const [showStoreConfig, setShowStoreConfig] = useState(false);
@@ -64,7 +64,8 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
         setItems,
         stores,
         onResultsFound,
-        searchMode
+        searchMode,
+        locationId: 'national'
     });
 
     return (
@@ -75,8 +76,15 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
                     <div className="p-4 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 shadow-sm">
                         <Zap className="w-8 h-8 text-emerald-600" />
                     </div>
-                    <div>
-                        <h3 className="text-3xl font-black text-foreground tracking-tight">Carga Masiva (Pareto)</h3>
+                    <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-3">
+                                <h3 className="text-3xl font-black text-foreground tracking-tight">Carga Masiva (Pareto)</h3>
+                                <div className="p-1 px-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20">
+                                    <span className="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Enterprise</span>
+                                </div>
+                            </div>
+                        </div>
                         <p className="text-muted-foreground font-medium">
                             Auditoría de precios a gran escala mediante Google Sheets o pegado manual
                         </p>
