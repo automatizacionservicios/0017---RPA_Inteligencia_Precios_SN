@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { extractGrams, cleanPrice, formatPrice } from '@/core/utils';
+import { extractGrams, cleanPrice, formatPrice, normalizeText } from '@/core/utils';
 
 describe('extractGrams', () => {
   it('should extract grams correctly', () => {
@@ -29,6 +29,44 @@ describe('extractGrams', () => {
 
   it('should handle decimals correctly', () => {
     expect(extractGrams('Cafe 1.5kg')).toEqual({ amount: 1500, unit: 'g' });
+  });
+  it('should handle special units like units, packages, bags', () => {
+    expect(extractGrams('Papel 12 und')).toEqual({ amount: 12, unit: 'und' });
+    expect(extractGrams('Galletas 3 paquetes')).toEqual({ amount: 3, unit: 'und' });
+    expect(extractGrams('Pan 6 uds')).toEqual({ amount: 6, unit: 'und' });
+  });
+
+  it('should handle cc as ml', () => {
+    expect(extractGrams('Gaseosa 250cc')).toEqual({ amount: 250, unit: 'ml' });
+  });
+
+  it('should handle liters correctly (l, lt, litro)', () => {
+    expect(extractGrams('Agua 1.5 l')).toEqual({ amount: 1500, unit: 'ml' });
+    expect(extractGrams('Leche 1 litro')).toEqual({ amount: 1000, unit: 'ml' });
+    expect(extractGrams('Jugo 2 lt')).toEqual({ amount: 2000, unit: 'ml' });
+  });
+});
+
+describe('normalizeText', () => {
+  it('should remove accents and special characters', () => {
+    expect(normalizeText('Café con Leche')).toBe('cafe con leche');
+    expect(normalizeText('Árbol cigüeña')).toBe('arbol ciguena');
+  });
+
+  it('should remove extra spaces', () => {
+    expect(normalizeText('  Pan   Integral  ')).toBe('pan integral');
+  });
+
+  it('should remove non-alphanumeric characters', () => {
+    expect(normalizeText('Arroz (500g) - Oferta!')).toBe('arroz 500g oferta');
+  });
+
+  it('should handle empty strings', () => {
+    expect(normalizeText('')).toBe('');
+    // @ts-expect-error Testing null input
+    expect(normalizeText(null)).toBe('');
+    // @ts-expect-error Testing undefined input
+    expect(normalizeText(undefined)).toBe('');
   });
 });
 
