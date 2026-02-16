@@ -6,8 +6,8 @@
  * Extrae de forma robusta la cantidad y unidad de medida de un texto.
  * Versión sincronizada con el Backend (price-scraper).
  */
-export function extractGrams(text: string): { amount: number; unit: string } {
-  if (!text) return { amount: 250, unit: 'g' };
+export function extractGrams(text: string): { amount: number; unit: string } | null {
+  if (!text) return null;
 
   const normalized = text.toLowerCase().replace(/\s+/g, ' ');
 
@@ -28,7 +28,7 @@ export function extractGrams(text: string): { amount: number; unit: string } {
       const val = parseFloat(lMatch[1].replace(',', '.'));
       return { amount: val * 1000, unit: 'ml' };
     }
-    return { amount: 250, unit: 'g' };
+    return null;
   }
 
   const val = parseFloat(weightMatch[1].replace(',', '.'));

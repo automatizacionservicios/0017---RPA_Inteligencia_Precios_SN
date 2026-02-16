@@ -62,7 +62,7 @@ export function exportToExcel(data: ExportData) {
     if (data.metadata.confidenceLevel) {
       summaryData.push(['Nivel de confianza:', data.metadata.confidenceLevel]);
     }
-    summaryData.push(['Modelo:', data.metadata.model]);
+    summaryData.push(['Modelo:', data.metadata.model || 'N/A']);
   }
 
   const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
@@ -134,7 +134,17 @@ export function exportToExcel(data: ExportData) {
       acc[product.store].totalPricePerGram += product.pricePerGram;
       return acc;
     },
-    {} as Record<string, any>
+    {} as Record<
+      string,
+      {
+        count: number;
+        totalPrice: number;
+        minPrice: number;
+        maxPrice: number;
+        avgPricePerGram: number;
+        totalPricePerGram: number;
+      }
+    >
   );
 
   const comparisonData = Object.entries(storeStats)

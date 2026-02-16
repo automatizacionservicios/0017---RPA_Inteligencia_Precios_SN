@@ -17,7 +17,10 @@ export const storeHealth = {
     if (!stored) return {};
     try {
       return JSON.parse(stored);
-    } catch (e) {
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.log(`[StoreHealth] JSON parse error for ${STORAGE_KEY}:`, error);
+      console.warn('[StoreHealth] Falling back to default empty state.');
       return {};
     }
   },
@@ -35,6 +38,7 @@ export const storeHealth = {
       consecutiveErrors: 0,
     };
     this.saveRegistry(registry);
+    // eslint-disable-next-line no-console
     console.log(`[CENTINELA] ${storeId} is ONLINE`);
   },
 

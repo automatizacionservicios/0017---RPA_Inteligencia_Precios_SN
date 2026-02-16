@@ -136,9 +136,9 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                     <div className="flex items-start gap-2 p-3 rounded-xl bg-white/60 backdrop-blur-sm border border-emerald-100/50">
                       <Info className="w-4 h-4 text-emerald-600 mt-0.5 flex-shrink-0" />
                       <p className="text-[11px] font-bold text-stone-600 leading-relaxed">
-                        <span className="text-emerald-700 font-black">¿Cómo funciona?</span> Ingresa el
-                        nombre del producto que buscas. El sistema rastreará las tiendas seleccionadas y te
-                        mostrará los códigos EAN encontrados para ese producto.
+                        <span className="text-emerald-700 font-black">¿Cómo funciona?</span> Ingresa
+                        el nombre del producto que buscas. El sistema rastreará las tiendas
+                        seleccionadas y te mostrará los códigos EAN encontrados para ese producto.
                       </p>
                     </div>
                   </div>
@@ -220,7 +220,9 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                     onClick={handleSelectAllStores}
                     className="text-[10px] font-black text-emerald-600 hover:text-emerald-700 uppercase tracking-widest px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition-colors"
                   >
-                    {filteredStores.every((s) => s.enabled) ? 'Deseleccionar todos' : 'Seleccionar todos'}
+                    {filteredStores.every((s) => s.enabled)
+                      ? 'Deseleccionar todos'
+                      : 'Seleccionar todos'}
                   </button>
                 </div>
 
@@ -232,10 +234,11 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                         key={store.id}
                         className={`
                                     relative flex items-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all duration-300 group
-                                    ${store.enabled
-                            ? 'border-emerald-500/50 bg-emerald-50/50 shadow-md shadow-emerald-500/10'
-                            : 'border-stone-100 bg-white hover:border-emerald-200 hover:shadow-md'
-                          }
+                                    ${
+                                      store.enabled
+                                        ? 'border-emerald-500/50 bg-emerald-50/50 shadow-md shadow-emerald-500/10'
+                                        : 'border-stone-100 bg-white hover:border-emerald-200 hover:shadow-md'
+                                    }
                                 `}
                       >
                         <Checkbox
@@ -277,7 +280,9 @@ const EanSearch = ({ onSearch, isLoading }: EanSearchProps) => {
                 {isLoading ? (
                   <div className="flex items-center gap-3">
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span className="font-black tracking-[0.2em] text-xs">LOCALIZANDO CÓDIGOS EAN...</span>
+                    <span className="font-black tracking-[0.2em] text-xs">
+                      LOCALIZANDO CÓDIGOS EAN...
+                    </span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-3">

@@ -42,7 +42,6 @@ interface UseBenchmarkSearchProps {
  */
 export const useBenchmarkSearch = ({
   initialSearch,
-  isEanMode,
   isLoading,
   stores,
   advancedOptions,
@@ -156,7 +155,7 @@ export const useBenchmarkSearch = ({
    * Effect to handle automatic search trigger from external navigation (e.g. Home Search)
    */
   useEffect(() => {
-    // We only trigger if autoTrigger is true, we have an initial search, 
+    // We only trigger if autoTrigger is true, we have an initial search,
     // we have stores loaded, and WE HAVEN'T TRIGGERED YET
     if (autoTrigger && initialSearch && stores.length > 0 && !isLoading && !hasTriggered.current) {
       hasTriggered.current = true; // Mark as triggered immediately
@@ -182,7 +181,7 @@ export const useBenchmarkSearch = ({
       }, 300);
       return () => clearTimeout(timer);
     }
-  }, [autoTrigger, initialSearch, stores.length, isLoading]); // Minimal dependencies
+  }, [autoTrigger, initialSearch, stores, isLoading, onSearch, advancedOptions, brandName]);
 
   return {
     productName,

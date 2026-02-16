@@ -52,8 +52,6 @@ const Benchmark = () => {
     } else if (mode === 'catalog') {
       setActiveTab('catalog');
     }
-
-
   }, [location.state]);
 
   const handleParetoResults = (foundProducts: MarketProduct[]) => {

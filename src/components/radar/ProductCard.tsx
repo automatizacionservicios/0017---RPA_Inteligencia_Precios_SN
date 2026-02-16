@@ -1,4 +1,4 @@
-import { ExternalLink, CheckCircle2 } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,7 +11,7 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product }: ProductCardProps) => {
   const brand = getStoreBrand(product.store);
-  const isExternal = (product as any).isExternalLink;
+  const isExternal = product.isExternalLink;
 
   if (isExternal) {
     return (
@@ -23,7 +23,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         </div>
         <CardContent className="p-8 flex flex-col items-center text-center space-y-6">
           <div className="w-20 h-20 rounded-full bg-stone-50 border border-stone-100 p-4 transition-transform group-hover:scale-110 duration-500">
-            <img src={brand.icon} alt={product.store} className="w-full h-full object-contain" />
+            <img
+              src={brand.icon || ''}
+              alt={product.store}
+              className="w-full h-full object-contain"
+            />
           </div>
           <div className="space-y-2">
             <h5 className="text-lg font-black text-stone-800 uppercase tracking-tighter leading-none">
@@ -58,9 +62,8 @@ export const ProductCard = ({ product }: ProductCardProps) => {
       </div>
       <CardContent className="p-0">
         <div className="relative h-48 bg-stone-50 p-6 flex items-center justify-center group-hover:bg-stone-100 transition-colors duration-500">
-          {/* Placeholder for product image if we add it later or if generic icon */}
           <img
-            src={brand.icon}
+            src={brand.icon || ''}
             alt={product.store}
             className="w-24 h-24 object-contain opacity-80 group-hover:scale-110 transition-transform duration-500 mix-blend-multiply"
           />
@@ -68,7 +71,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="p-6 space-y-4">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full bg-stone-100 p-1.5 shrink-0">
-              <img src={brand.icon} alt={product.store} className="w-full h-full object-contain" />
+              <img
+                src={brand.icon || ''}
+                alt={product.store}
+                className="w-full h-full object-contain"
+              />
             </div>
             <span className="text-[10px] font-black uppercase tracking-widest text-stone-400">
               {product.store}
@@ -92,7 +99,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
               </p>
             </div>
             <div className="text-right space-y-1">
-              {product.gramsAmount > 0 && (
+              {product.gramsAmount && product.gramsAmount > 0 && product.pricePerGram ? (
                 <>
                   <p className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                     x Gramo
@@ -101,7 +108,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
                     ${product.pricePerGram.toFixed(1)}
                   </p>
                 </>
-              )}
+              ) : null}
             </div>
           </div>
 

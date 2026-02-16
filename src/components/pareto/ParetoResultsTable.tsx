@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2, ExternalLink } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import {
   Table,
   TableBody,
@@ -91,7 +91,9 @@ export const ParetoResultsTable = ({
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 10 }}
                   transition={{ delay: idx * 0.005 }}
-                  className={`border-b border-stone-100 transition-colors ${!item.selected ? 'opacity-40 grayscale bg-stone-50/10' : 'hover:bg-stone-50/50'} group`}
+                  className={`border-b border-stone-100 transition-colors ${
+                    !item.selected ? 'opacity-40 grayscale bg-stone-50/10' : 'hover:bg-stone-50/50'
+                  } group`}
                 >
                   <TableCell className="px-6">
                     <Checkbox
@@ -174,7 +176,8 @@ export const ParetoResultsTable = ({
                                     delay: idx * 0.05 + sIdx * 0.1,
                                   }}
                                   className="w-10 h-10 rounded-full bg-white shadow-lg border-2 border-white flex items-center justify-center p-1.5 relative ring-1 ring-stone-100 cursor-pointer"
-                                  style={{ zIndex: 10 - sIdx }}
+                                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                  style={{ zIndex: (10 - sIdx) as any }}
                                   title={brand.name}
                                 >
                                   {brand.icon ? (

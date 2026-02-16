@@ -1,23 +1,9 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Search,
-  Info,
-  Plus,
-  X,
-  Store as StoreIcon,
-  Beef,
-  Barcode,
-  Tag,
-  Settings2,
-  ArrowRight,
-  MapPin,
-} from 'lucide-react';
+import { Search, Info, Store as StoreIcon, Beef, Barcode } from 'lucide-react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Badge } from '@/components/ui/badge';
 import {
   Select,
   SelectContent,
@@ -25,11 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { toast } from 'sonner';
-import { getStoreBrand } from '@/lib/store-branding';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { isEanOnly } from '@/lib/store-capabilities';
 import { useStoreManagement, type Store, type AdvancedOptions } from '@/hooks/useStoreManagement';
 import { useBenchmarkSearch } from '@/hooks/useBenchmarkSearch';
 import { StoreCard } from './benchmark/StoreCard';
@@ -62,10 +45,6 @@ interface BenchmarkSearchProps {
   isEanMode?: boolean;
   /** If true, shows unfiltered store list for Radar audit */
   isRadar?: boolean;
-  /** Current selected location ID */
-  locationId?: string;
-  /** Callback to change location */
-  setLocationId?: (id: string) => void;
   /** If true, triggers the search automatically when initialSearch is provided */
   autoTrigger?: boolean;
 }
@@ -82,13 +61,11 @@ const BenchmarkSearch = ({
   mode = 'product',
   isEanMode = false,
   isRadar = false,
-  locationId,
-  setLocationId,
   autoTrigger = false,
 }: BenchmarkSearchProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!!initialSearch);
   const [activeTab, setActiveTab] = useState(isEanMode ? 'ean' : 'name');
-  const [advancedOptions, setAdvancedOptions] = useState<AdvancedOptions>({
+  const [advancedOptions] = useState<AdvancedOptions>({
     searchRecency: 'week',
     deepResearch: true,
   });
@@ -150,7 +127,11 @@ const BenchmarkSearch = ({
           >
             <div className="flex items-center gap-6">
               <div className="p-4 rounded-2xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                {activeTab === 'ean' ? <Barcode className="w-8 h-8" /> : <Search className="w-8 h-8" />}
+                {activeTab === 'ean' ? (
+                  <Barcode className="w-8 h-8" />
+                ) : (
+                  <Search className="w-8 h-8" />
+                )}
               </div>
               <div>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-500/80 mb-1">
@@ -247,7 +228,8 @@ const BenchmarkSearch = ({
                               </TooltipTrigger>
                               <TooltipContent className="bg-stone-900 text-white border-none rounded-xl p-3 max-w-xs">
                                 <p className="text-[10px] font-bold leading-relaxed">
-                                  Pega aquí el código de 13 dígitos para una búsqueda idéntica a Pareto.
+                                  Pega aquí el código de 13 dígitos para una búsqueda idéntica a
+                                  Pareto.
                                 </p>
                               </TooltipContent>
                             </Tooltip>
@@ -455,7 +437,10 @@ const BenchmarkSearch = ({
                       >
                         Punto de Venta / Canal
                       </Label>
-                      <Select value={selectedStoreForCatalog} onValueChange={setSelectedStoreForCatalog}>
+                      <Select
+                        value={selectedStoreForCatalog}
+                        onValueChange={setSelectedStoreForCatalog}
+                      >
                         <SelectTrigger className="h-16 border-stone-100 bg-white/80 focus:ring-amber-500/20 focus:border-amber-500 transition-all text-sm font-bold text-stone-800 px-6 rounded-2xl shadow-sm hover:border-stone-200">
                           <SelectValue placeholder="Elige una tienda..." />
                         </SelectTrigger>

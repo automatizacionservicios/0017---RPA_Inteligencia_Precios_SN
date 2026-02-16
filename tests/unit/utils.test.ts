@@ -3,23 +3,23 @@ import { extractGrams, cleanPrice, formatPrice } from '@/core/utils';
 
 describe('extractGrams', () => {
   it('should extract grams correctly', () => {
-    expect(extractGrams('Cafe 500g')).toBe(500);
-    expect(extractGrams('Cafe 500 gr')).toBe(500);
+    expect(extractGrams('Cafe 500g')).toEqual({ amount: 500, unit: 'g' });
+    expect(extractGrams('Cafe 500 gr')).toEqual({ amount: 500, unit: 'g' });
   });
 
   it('should extract kilograms and convert to grams', () => {
-    expect(extractGrams('Cafe 1kg')).toBe(1000);
-    expect(extractGrams('Cafe 2.5 kg')).toBe(2500);
+    expect(extractGrams('Cafe 1kg')).toEqual({ amount: 1000, unit: 'g' });
+    expect(extractGrams('Cafe 2.5 kg')).toEqual({ amount: 2500, unit: 'g' });
   });
 
   it('should extract milliliters', () => {
-    expect(extractGrams('Leche 900ml')).toBe(900);
-    expect(extractGrams('Aceite 1000 ml')).toBe(1000);
+    expect(extractGrams('Leche 900ml')).toEqual({ amount: 900, unit: 'ml' });
+    expect(extractGrams('Aceite 1000 ml')).toEqual({ amount: 1000, unit: 'ml' });
   });
 
-  it('should extract ounces and pounds (as per regex)', () => {
-    expect(extractGrams('Cafe 16oz')).toBe(16);
-    expect(extractGrams('Cafe 1lb')).toBe(1);
+  it('should extract ounces and pounds (converted to grams)', () => {
+    expect(extractGrams('Cafe 16oz')).toEqual({ amount: 454, unit: 'g' });
+    expect(extractGrams('Cafe 1lb')).toEqual({ amount: 500, unit: 'g' });
   });
 
   it('should return null for strings without weight', () => {
@@ -28,7 +28,7 @@ describe('extractGrams', () => {
   });
 
   it('should handle decimals correctly', () => {
-    expect(extractGrams('Cafe 1.5kg')).toBe(1500);
+    expect(extractGrams('Cafe 1.5kg')).toEqual({ amount: 1500, unit: 'g' });
   });
 });
 

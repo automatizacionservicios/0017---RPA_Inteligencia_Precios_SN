@@ -35,7 +35,7 @@ export const NAME_SEARCH_STORES = [
 /**
  * Check if a store supports name-based search
  */
-export function canSearchByName(storeId: string): boolean {
+export function canSearchByName(_storeId: string): boolean {
   return true; // Now all stores support name search
 }
 

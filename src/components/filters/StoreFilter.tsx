@@ -1,6 +1,5 @@
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Store, CheckCircle2, Circle } from 'lucide-react';
 import { getStoreBrand } from '@/lib/store-branding';
 

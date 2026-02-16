@@ -28,7 +28,6 @@ import { STORE_BRANDING, type StoreBrand } from '@/lib/store-branding';
 import { storeHealth } from '@/lib/store-health';
 import { canSearchByEan } from '@/lib/store-capabilities';
 
-
 const SectionHeader = ({
   badge,
   title,
@@ -41,15 +40,17 @@ const SectionHeader = ({
   centered?: boolean;
 }) => (
   <div
-    className={`flex flex-col mb-12 animate-fade-in ${centered ? 'text-center' : 'text-center md:text-left'
-      }`}
+    className={`flex flex-col mb-12 animate-fade-in ${
+      centered ? 'text-center' : 'text-center md:text-left'
+    }`}
   >
     <motion.div
       initial={{ opacity: 0, x: centered ? 0 : -20 }}
       whileInView={{ opacity: 1, x: 0 }}
       viewport={{ once: true }}
-      className={`flex items-center gap-3 mb-2 ${centered ? 'justify-center' : 'justify-center md:justify-start'
-        }`}
+      className={`flex items-center gap-3 mb-2 ${
+        centered ? 'justify-center' : 'justify-center md:justify-start'
+      }`}
     >
       <div className="h-0.5 w-12 bg-emerald-500 rounded-full" />
       <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">
@@ -344,11 +345,7 @@ const Home = () => {
 
       {/* Bento Grid - Premium Redesign (Inspired by Reference Images) */}
       <section className="max-w-[1440px] mx-auto px-6 xl:px-12 py-24 relative z-20 -mt-24">
-        <SectionHeader
-          badge="Ecosistema Profesional"
-          title="Módulos de"
-          highlight="Inteligencia"
-        />
+        <SectionHeader badge="Ecosistema Profesional" title="Módulos de" highlight="Inteligencia" />
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 auto-rows-[240px]">
             {/* 1. BUSCADOR DE EANS (Large/Tall) */}
@@ -711,7 +708,10 @@ const Home = () => {
 };
 
 const StoreShowcaseCard = ({ id, brand, idx }: { id: string; brand: StoreBrand; idx: number }) => {
-  const effectiveStatus = storeHealth.getEffectiveStatus(id, (brand.status || 'online') as 'online' | 'manual' | 'maintenance' | 'coming_soon');
+  const effectiveStatus = storeHealth.getEffectiveStatus(
+    id,
+    (brand.status || 'online') as 'online' | 'manual' | 'maintenance' | 'coming_soon'
+  );
 
   return (
     <motion.div
@@ -721,8 +721,9 @@ const StoreShowcaseCard = ({ id, brand, idx }: { id: string; brand: StoreBrand; 
       viewport={{ once: true }}
       transition={{ delay: idx * 0.05, duration: 0.5 }}
       onClick={() => brand.url && window.open(brand.url, '_blank')}
-      className={`group relative flex flex-col items-center gap-5 bg-white/60 backdrop-blur-md p-8 rounded-[40px] border border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer overflow-hidden ${effectiveStatus === 'maintenance' || effectiveStatus === 'coming_soon' ? 'opacity-80' : ''
-        }`}
+      className={`group relative flex flex-col items-center gap-5 bg-white/60 backdrop-blur-md p-8 rounded-[40px] border border-stone-100 shadow-sm hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 cursor-pointer overflow-hidden ${
+        effectiveStatus === 'maintenance' || effectiveStatus === 'coming_soon' ? 'opacity-80' : ''
+      }`}
       style={{ '--brand-color': brand.color } as React.CSSProperties}
     >
       {/* Brand Background Glow */}
@@ -756,10 +757,11 @@ const StoreShowcaseCard = ({ id, brand, idx }: { id: string; brand: StoreBrand; 
       </div>
 
       <div
-        className={`w-24 h-24 rounded-full border border-stone-50 flex items-center justify-center bg-white p-4 shadow-xl shadow-stone-200/50 group-hover:scale-110 group-hover:ring-8 group-hover:ring-emerald-500/5 transition-all duration-700 relative z-10 ${effectiveStatus === 'maintenance' || effectiveStatus === 'coming_soon'
-          ? 'grayscale opacity-60'
-          : ''
-          }`}
+        className={`w-24 h-24 rounded-full border border-stone-50 flex items-center justify-center bg-white p-4 shadow-xl shadow-stone-200/50 group-hover:scale-110 group-hover:ring-8 group-hover:ring-emerald-500/5 transition-all duration-700 relative z-10 ${
+          effectiveStatus === 'maintenance' || effectiveStatus === 'coming_soon'
+            ? 'grayscale opacity-60'
+            : ''
+        }`}
       >
         <img src={brand.icon!} alt={brand.name} className="w-full h-full object-contain" />
       </div>

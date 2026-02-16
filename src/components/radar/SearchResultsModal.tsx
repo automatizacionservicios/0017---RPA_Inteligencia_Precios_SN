@@ -19,8 +19,8 @@ interface SearchResultsModalProps {
 }
 
 export const SearchResultsModal = ({ results, isOpen, onOpenChange }: SearchResultsModalProps) => {
-  const directProducts = results.products.filter((p) => !(p as any).isExternalLink);
-  const externalProducts = results.products.filter((p) => (p as any).isExternalLink);
+  const directProducts = results.products.filter((p) => !p.isExternalLink);
+  const externalProducts = results.products.filter((p) => p.isExternalLink);
 
   return (
     <motion.div

@@ -12,7 +12,6 @@ import {
   Cell,
   PieChart,
   Pie,
-  Legend,
 } from 'recharts';
 import {
   ChevronDown,
@@ -21,7 +20,6 @@ import {
   TrendingDown,
   Store,
   PieChart as PieChartIcon,
-  Info,
   Target,
   Award,
   Zap,
@@ -34,6 +32,7 @@ interface BenchmarkChartProps {
   products: MarketProduct[];
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
@@ -86,6 +85,14 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const chartRef = useRef<HTMLDivElement>(null);
 
   const activeProducts = products.filter((p) => p.price > 0);
+
+  useLayoutEffect(() => {
+    if (chartRef.current && activeTab === 'details' && isExpanded) {
+      const height = Math.max(400, activeProducts.length * 35);
+      chartRef.current.style.height = `${height}px`;
+    }
+  }, [activeProducts.length, activeTab, isExpanded]);
+
   if (activeProducts.length === 0) return null;
 
   // --- PROCESAMIENTO ESTRATÉGICO DE DATOS ---
@@ -141,13 +148,6 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const marketLeader = pieData.length > 0 ? pieData[0].name : 'N/A';
   const totalProducts = Object.keys(productGroups).length;
 
-  useLayoutEffect(() => {
-    if (chartRef.current && activeTab === 'details' && isExpanded) {
-      const height = Math.max(400, activeProducts.length * 35);
-      chartRef.current.style.height = `${height}px`;
-    }
-  }, [activeProducts.length, activeTab, isExpanded]);
-
   return (
     <Card className="border-none bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] rounded-3xl overflow-hidden group">
       <CardHeader className="p-8 pb-4">
@@ -174,10 +174,11 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 setActiveTab('overview');
                 setIsExpanded(true);
               }}
-              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'overview' && isExpanded
+              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${
+                activeTab === 'overview' && isExpanded
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-stone-400 opacity-60'
-                }`}
+              }`}
             >
               <PieChartIcon className="w-3.5 h-3.5" />
               Liderazgo
@@ -189,10 +190,11 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 setActiveTab('details');
                 setIsExpanded(true);
               }}
-              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'details' && isExpanded
+              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${
+                activeTab === 'details' && isExpanded
                   ? 'bg-white text-emerald-600 shadow-sm'
                   : 'text-stone-400 opacity-60'
-                }`}
+              }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
               Productos

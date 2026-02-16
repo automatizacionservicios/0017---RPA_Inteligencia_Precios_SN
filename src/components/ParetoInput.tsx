@@ -9,7 +9,6 @@ import {
   Target,
   List,
   Loader2,
-  Settings2,
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -20,7 +19,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { MarketProduct } from '@/types/benchmark';
 
 // Custom Hooks
-import { useParetoData, ParetoItem } from '@/hooks/useParetoData';
+import { useParetoData } from '@/hooks/useParetoData';
 import { useParetoAudit } from '@/hooks/useParetoAudit';
 import { useParetoStores } from '@/hooks/useParetoStores';
 
@@ -30,13 +29,6 @@ import { DataIngestionCards } from './pareto/DataIngestionCards';
 import { AuditStatusCard } from './pareto/AuditStatusCard';
 import { ParetoResultsTable } from './pareto/ParetoResultsTable';
 import { SheetSelectorDialog } from './pareto/SheetSelectorDialog';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 interface ParetoInputProps {
   onResultsFound: (results: MarketProduct[]) => void;
 }
@@ -56,7 +48,6 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
     handlePaste,
     loadFromGSheet,
     processSheet,
-    removeItem,
     toggleItemSelection,
     toggleAllItems,
   } = useParetoData();
@@ -105,7 +96,8 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
                     Auditoría Masiva en Curso
                   </h3>
                   <p className="text-[10px] font-black uppercase tracking-widest text-emerald-500/80 mt-1">
-                    Modo {searchMode === 'best-price' ? 'Mejor Precio' : 'Lista Cruzada'} • {items.length} SKUs
+                    Modo {searchMode === 'best-price' ? 'Mejor Precio' : 'Lista Cruzada'} •{' '}
+                    {items.length} SKUs
                   </p>
                 </div>
               </div>
@@ -168,7 +160,7 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
                   </Label>
                   <Tabs
                     value={searchMode}
-                    onValueChange={(v: any) => setSearchMode(v)}
+                    onValueChange={(v) => setSearchMode(v as 'best-price' | 'full-list')}
                     className="w-full"
                   >
                     <TabsList className="grid w-full grid-cols-2 h-14 p-1.5 bg-stone-100/80 rounded-2xl relative">
@@ -268,7 +260,7 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
             setGsheetUrl={setGsheetUrl}
             isFetchingSheet={isFetchingSheet}
             onLoadFromGSheet={() => loadFromGSheet(gsheetUrl)}
-            onPaste={(e) => handlePaste(e.clipboardData.getData('text'))}
+            onPaste={(e: React.ClipboardEvent) => handlePaste(e.clipboardData.getData('text'))}
           />
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">
@@ -297,7 +289,7 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
         open={isSheetDialogOpen}
         onOpenChange={setIsSheetDialogOpen}
         availableSheets={availableSheets}
-        onSelectSheet={(name) => currentWorkbook && processSheet(currentWorkbook, name)}
+        onSelectSheet={(name: string) => currentWorkbook && processSheet(currentWorkbook, name)}
       />
     </div>
   );

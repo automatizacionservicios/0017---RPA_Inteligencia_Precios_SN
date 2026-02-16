@@ -289,10 +289,11 @@ const Contact = () => {
 
                     <Button
                       disabled={isSubmitting}
-                      className={`w-full h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all duration-500 flex items-center justify-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 group/btn ${isSubmitting
-                        ? 'bg-stone-100 text-stone-400'
-                        : 'bg-stone-900 hover:bg-emerald-600 text-white'
-                        }`}
+                      className={`w-full h-20 rounded-2xl font-black uppercase tracking-[0.2em] text-xs transition-all duration-500 flex items-center justify-center gap-4 shadow-2xl hover:scale-[1.02] active:scale-95 group/btn ${
+                        isSubmitting
+                          ? 'bg-stone-100 text-stone-400'
+                          : 'bg-stone-900 hover:bg-emerald-600 text-white'
+                      }`}
                     >
                       {isSubmitting ? (
                         <>

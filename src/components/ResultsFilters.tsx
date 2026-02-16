@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Filter, RotateCcw, TrendingDown } from 'lucide-react';
+import { Filter, RotateCcw, TrendingDown } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MarketProduct } from '@/types/benchmark';
 import { GrammageFilter } from './filters/GrammageFilter';
@@ -179,7 +179,11 @@ const ResultsFilters = ({ products, onFilterChange }: ResultsFiltersProps) => {
         <div className="flex items-center justify-between p-4 mb-8 rounded-2xl bg-emerald-50/50 border border-emerald-100 shadow-inner group/promo transition-all hover:bg-emerald-50">
           <div className="flex items-center gap-4">
             <div
-              className={`p-3 rounded-xl transition-all duration-500 ${onlyDeals ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-emerald-600 border border-emerald-100'}`}
+              className={`p-3 rounded-xl transition-all duration-500 ${
+                onlyDeals
+                  ? 'bg-emerald-600 text-white shadow-lg'
+                  : 'bg-white text-emerald-600 border border-emerald-100'
+              }`}
             >
               <TrendingDown className="w-5 h-5" />
             </div>
@@ -203,7 +207,9 @@ const ResultsFilters = ({ products, onFilterChange }: ResultsFiltersProps) => {
           >
             {onlyDeals ? 'Detección Activa' : 'Filtrar por Ofertas'}
             <div
-              className={`w-2 h-2 rounded-full ${onlyDeals ? 'bg-white animate-pulse' : 'bg-emerald-200'}`}
+              className={`w-2 h-2 rounded-full ${
+                onlyDeals ? 'bg-white animate-pulse' : 'bg-emerald-200'
+              }`}
             />
           </Button>
         </div>

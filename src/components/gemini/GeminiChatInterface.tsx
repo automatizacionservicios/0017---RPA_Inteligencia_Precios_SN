@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Send, Bot, User } from 'lucide-react';
+import { Send, User } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { MarketProduct, BenchmarkMetadata } from '@/types/benchmark';
@@ -39,6 +39,7 @@ export const GeminiChatInterface = ({
         try {
           const parsed = JSON.parse(stored);
           // Convertir timestamps de string a Date
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           return parsed.map((msg: any) => ({
             ...msg,
             timestamp: new Date(msg.timestamp),
@@ -143,11 +144,10 @@ export const GeminiChatInterface = ({
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div
-                  className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border transition-transform hover:scale-105 ${
-                    msg.role === 'user'
+                  className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border transition-transform hover:scale-105 ${msg.role === 'user'
                       ? 'bg-stone-900 border-stone-800 text-white'
                       : 'bg-white border-stone-100'
-                  }`}
+                    }`}
                 >
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5" />
@@ -157,14 +157,14 @@ export const GeminiChatInterface = ({
                 </div>
 
                 <div
-                  className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end text-right' : 'items-start'}`}
+                  className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end text-right' : 'items-start'
+                    }`}
                 >
                   <div
-                    className={`p-4 rounded-3xl text-[13px] font-medium leading-relaxed shadow-sm transition-all ${
-                      msg.role === 'user'
+                    className={`p-4 rounded-3xl text-[13px] font-medium leading-relaxed shadow-sm transition-all ${msg.role === 'user'
                         ? 'bg-emerald-600 text-white rounded-tr-none shadow-emerald-200/20'
                         : 'bg-white border border-stone-100 text-stone-700 rounded-tl-none'
-                    }`}
+                      }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
@@ -194,18 +194,9 @@ export const GeminiChatInterface = ({
               </div>
               <div className="bg-white/50 backdrop-blur-sm border border-stone-100 px-5 py-4 rounded-3xl rounded-tl-none shadow-sm">
                 <div className="flex gap-1.5">
-                  <div
-                    className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce"
-                    style={{ animationDelay: '0ms' }}
-                  />
-                  <div
-                    className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce"
-                    style={{ animationDelay: '150ms' }}
-                  />
-                  <div
-                    className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce"
-                    style={{ animationDelay: '300ms' }}
-                  />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce [animation-delay:0ms]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce [animation-delay:150ms]" />
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/40 animate-bounce [animation-delay:300ms]" />
                 </div>
               </div>
             </motion.div>

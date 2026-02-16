@@ -2,11 +2,9 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Search,
   Zap,
-  Command,
   LayoutDashboard,
   Store as StoreIcon,
   FileText,
-  Settings,
   Sparkles,
   MessageSquare,
   PackageCheck,
@@ -20,13 +18,11 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command';
 
 const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const isBenchmarkPage = location.pathname === '/benchmark';
   const isHomePage = location.pathname === '/';
   const [open, setOpen] = useState(false);
 
