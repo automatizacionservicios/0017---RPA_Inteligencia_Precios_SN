@@ -5,14 +5,14 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter } from 'react-router-dom';
 import React from 'react';
 
-// Mock ResizeObserver as a class
+// Simulando ResizeObserver como una clase
 global.ResizeObserver = class ResizeObserver {
   observe = vi.fn();
   unobserve = vi.fn();
   disconnect = vi.fn();
 };
 
-// Mock Supabase
+// Simulando Supabase
 vi.mock('@supabase/supabase-js', () => ({
   createClient: vi.fn(() => ({
     functions: {
@@ -24,7 +24,7 @@ vi.mock('@supabase/supabase-js', () => ({
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      retry: false,
+      retry: false, // Desactivar reintentos en pruebas
     },
   },
 });
@@ -47,20 +47,20 @@ describe('SearchFlow - Feature Test', () => {
 
     render(<BenchmarkSearch onSearch={onSearchMock} isLoading={false} />, { wrapper });
 
-    // Find the name mode tab if not active
+    // Buscar la pestaña de modo nombre si no está activa
     const nameTab = screen.getByText(/Modo Nombre/i);
     fireEvent.click(nameTab);
 
-    // Find search input
+    // Buscar el input de búsqueda
     const input = screen.getByPlaceholderText(/Ej: Café Colcafé Granulado/i) as HTMLInputElement;
     fireEvent.change(input, { target: { value: 'Arroz' } });
     expect(input.value).toBe('Arroz');
 
-    // Find and click search button
+    // Buscar y hacer clic en el botón de búsqueda
     const searchBtn = screen.getByRole('button', { name: /Iniciar Búsqueda/i });
     fireEvent.click(searchBtn);
 
-    // Verify onSearch callback was called with "Arroz"
+    // Verificar que el callback onSearch fue llamado con "Arroz"
     await waitFor(
       () => {
         expect(onSearchMock).toHaveBeenCalled();

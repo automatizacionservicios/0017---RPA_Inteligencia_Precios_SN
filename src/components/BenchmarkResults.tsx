@@ -1,5 +1,5 @@
 /* eslint-disable */
-// Preserving legacy business logic to avoid regressions
+// Preservando la lógica de negocio heredada para evitar regresiones
 import React, { useState, useMemo } from 'react';
 import {
   Table,
@@ -76,7 +76,7 @@ const BenchmarkResults = ({
     setCollapsedGroups(newCollapsed);
   };
 
-  // First, group products by EAN/Name to handle the visual grouping request
+  // Primero, agrupar productos por EAN/Nombre para manejar la solicitud de agrupación visual
   const groupedProducts = useMemo(() => {
     const groups: Record<string, MarketProduct[]> = {};
 
@@ -115,21 +115,21 @@ const BenchmarkResults = ({
       'omega',
     ];
 
-    // Get significant tokens for matching
+    // Obtener tokens significativos para la coincidencia
     const getTokens = (str: string) => {
       if (!str) return [];
       return str
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Remove accents
-        .replace(/\b\d+\s*(g|gr|ml|kg|oz|lb)\b/gi, ' ') // remove units
-        .replace(/lomitos/g, 'lomo') // Normalize lomo/lomitos
-        .replace(/[^a-z0-9]/g, ' ') // Symbols to spaces
+        .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
+        .replace(/\b\d+\s*(g|gr|ml|kg|oz|lb)\b/gi, ' ') // eliminar unidades
+        .replace(/lomitos/g, 'lomo') // Normalizar lomo/lomitos
+        .replace(/[^a-z0-9]/g, ' ') // Símbolos por espacios
         .split(/\s+/)
-        .filter((word) => word.length > 2 && !STOP_WORDS.has(word)); // Meaningful & non-generic words only
+        .filter((word) => word.length > 2 && !STOP_WORDS.has(word)); // Solo palabras significativas y no genéricas
     };
 
-    // First pass: Group items primarily by EAN (Business Rule: EAN is the key)
+    // Primera pasada: Agrupar artículos principalmente por EAN (Regla de negocio: EAN es la clave)
     filteredProducts.forEach((product) => {
       if (product.ean) {
         const groupKey = product.ean;
@@ -138,26 +138,28 @@ const BenchmarkResults = ({
       }
     });
 
-    // Second pass: Group items WITHOUT EAN (or with different EANs but same product)
-    // into existing EAN groups if names overlap significantly AND weight is compatible
+    // Segunda pasada: Agrupar artículos SIN EAN (o con diferentes EANs pero el mismo producto)
+    // en grupos EAN existentes si los nombres coinciden significativamente Y el peso es compatible
     filteredProducts.forEach((product) => {
       if (!product.ean) {
         const tokens = getTokens(product.productName);
-        const weight = product.gramsAmount || extractGrams(product.productName).amount;
+        const gramsResult = extractGrams(product.productName);
+        const weight = product.gramsAmount || (gramsResult ? gramsResult.amount : 0);
         if (tokens.length === 0) return;
 
-        // Try to find a match in existing groups based on token overlap + grammage
+        // Intentar encontrar una coincidencia en los grupos existentes según el solapamiento de tokens + gramaje
         const matchKey = Object.keys(groups).find((key) => {
           return groups[key].some((p) => {
-            const pWeight = p.gramsAmount || extractGrams(p.productName).amount;
-            // Must have same weight if both have one. Allow 5% tolerance for rounding difference
+            const pGramsResult = extractGrams(p.productName);
+            const pWeight = p.gramsAmount || (pGramsResult ? pGramsResult.amount : 0);
+            // Deben tener el mismo peso si ambos lo tienen. Permitir un 5% de tolerancia por diferencias de redondeo
             if (weight && pWeight && Math.abs(weight - pWeight) > Math.max(weight, pWeight) * 0.05)
               return false;
 
             const pTokens = getTokens(p.productName);
             const common = pTokens.filter((t) => tokens.includes(t));
 
-            // CRITICAL: If one has a variety word that the other doesn't have, they are DIFF
+            // CRÍTICO: Si uno tiene una palabra de variedad que el otro no tiene, son DIFERENTES
             const myVarieties = VARIETY_WORDS.filter((vw) => tokens.includes(vw));
             const pVarieties = VARIETY_WORDS.filter((vw) => pTokens.includes(vw));
             const differentVarieties =
@@ -166,17 +168,17 @@ const BenchmarkResults = ({
             if (differentVarieties && (myVarieties.length > 0 || pVarieties.length > 0))
               return false;
 
-            // Match if they share a significant brand token
-            // AND have a reasonable overlap
+            // Coincidencia si comparten un token de marca significativo
+            // Y tienen un solapamiento razonable
             const minTokens = Math.min(pTokens.length, tokens.length);
-            return common.length >= 2 && common.length / minTokens >= 0.7; // Upped from 0.6 for more precision
+            return common.length >= 2 && common.length / minTokens >= 0.7; // Aumentado de 0.6 para mayor precisión
           });
         });
 
         if (matchKey) {
           groups[matchKey].push(product);
         } else {
-          // No EAN match, group by a name-derived key
+          // Sin coincidencia por EAN, agrupar por una clave derivada del nombre
           const nameKey = `name_${tokens.sort().join('')}_${weight || ''}`;
           if (!groups[nameKey]) groups[nameKey] = [];
           groups[nameKey].push(product);
@@ -184,10 +186,10 @@ const BenchmarkResults = ({
       }
     });
 
-    // Convert to array of groups for easier sorting
+    // Convertir a un array de grupos para facilitar la ordenación
     return Object.entries(groups).map(([key, groupProducts]) => {
       const eanProduct = groupProducts.find((p) => p.ean);
-      // Select the most representative name: EAN name if available, otherwise shortest (usually cleanest)
+      // Seleccionar el nombre más representativo: el nombre EAN si está disponible, de lo contrario el más corto (generalmente el más limpio)
       const bestName =
         eanProduct?.productName ||
         [...groupProducts].sort((a, b) => a.productName.length - b.productName.length)[0]
@@ -265,7 +267,7 @@ const BenchmarkResults = ({
       {/* Filtros */}
       <ResultsFilters products={products} onFilterChange={setFilteredProducts} />
 
-      {/* EAN Locator Summary - NEW */}
+      {/* Resumen del Localizador de EAN - NUEVO */}
       {isEanSearch && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
@@ -328,7 +330,7 @@ const BenchmarkResults = ({
         </motion.div>
       )}
 
-      {/* Guide for Auditors (Antibobos) - NEW */}
+      {/* Guía para Auditores (Antibobos) - NUEVO */}
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -462,17 +464,20 @@ const BenchmarkResults = ({
 
                   // Calcular el Gramaje Objetivo del grupo (el más frecuente o el mayor/base)
                   const weights = validProducts
-                    .map((p) => p.gramsAmount || extractGrams(p.productName).amount)
+                    .map((p) => {
+                      const gramsResult = extractGrams(p.productName);
+                      return p.gramsAmount || (gramsResult ? gramsResult.amount : null);
+                    })
                     .filter((w) => w !== null) as number[];
                   const groupTargetWeight =
                     weights.length > 0
                       ? // Usar la moda o el valor que más se repite
-                        Object.entries(
-                          weights.reduce(
-                            (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
-                            {} as Record<number, number>
-                          )
-                        ).sort((a, b) => b[1] - a[1])[0][0]
+                      Object.entries(
+                        weights.reduce(
+                          (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
+                          {} as Record<number, number>
+                        )
+                      ).sort((a, b) => b[1] - a[1])[0][0]
                       : null;
 
                   // Usar todos los productos válidos para el Benchmark real (no excluir por gramaje, solo alertar)
@@ -493,7 +498,7 @@ const BenchmarkResults = ({
 
                   return (
                     <React.Fragment key={group.key}>
-                      {/* Technical Group Header */}
+                      {/* Encabezado Técnico del Grupo */}
                       <motion.tr
                         key={group.key}
                         initial={{ opacity: 0, y: 15 }}
@@ -568,7 +573,7 @@ const BenchmarkResults = ({
                         </TableCell>
                       </motion.tr>
 
-                      {/* Detail Rows */}
+                      {/* Filas de Detalle */}
                       <AnimatePresence>
                         {!isCollapsed &&
                           (() => {
@@ -601,11 +606,10 @@ const BenchmarkResults = ({
                                     <TableCell className="pl-12 py-5">
                                       <div className="flex items-center gap-3">
                                         <div
-                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${
-                                            isLowestPrice
-                                              ? 'border-emerald-200 ring-4 ring-emerald-500/10'
-                                              : 'border-stone-100'
-                                          }`}
+                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice
+                                            ? 'border-emerald-200 ring-4 ring-emerald-500/10'
+                                            : 'border-stone-100'
+                                            }`}
                                         >
                                           {getStoreBrand(product.store).icon ? (
                                             <img
@@ -667,14 +671,12 @@ const BenchmarkResults = ({
 
                                             {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
                                             {groupTargetWeight &&
-                                              (product.gramsAmount ||
-                                                extractGrams(product.productName).amount) &&
+                                              extractGrams(product.productName)?.amount !== undefined &&
                                               Math.abs(
-                                                (product.gramsAmount ||
-                                                  extractGrams(product.productName).amount)! -
-                                                  Number(groupTargetWeight)
+                                                (extractGrams(product.productName)?.amount || 0) -
+                                                Number(groupTargetWeight)
                                               ) >
-                                                Number(groupTargetWeight) * 0.1 && (
+                                              Number(groupTargetWeight) * 0.1 && (
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[7px] font-black text-amber-700 uppercase tracking-tighter shadow-sm shrink-0">
                                                   <AlertTriangle className="w-2 h-2 text-amber-500" />
                                                   VERIF. GRAM
@@ -770,14 +772,13 @@ const BenchmarkResults = ({
                                     </TableCell>
                                     <TableCell>
                                       <div
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${
-                                          product.availability
-                                            .toLowerCase()
-                                            .includes('disponible') ||
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability
+                                          .toLowerCase()
+                                          .includes('disponible') ||
                                           product.availability === 'En stock'
-                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                            : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
-                                        }`}
+                                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                          : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
+                                          }`}
                                       >
                                         <div
                                           className={`w-1.5 h-1.5 rounded-full ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock' ? 'bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`}

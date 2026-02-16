@@ -5,57 +5,57 @@ import { Store, AdvancedOptions } from '@/types/store';
 import { getDefaultStoreList } from '@/lib/store-registry';
 
 /**
- * Hook to manage the list of stores for Benchmark and Radar search.
- * Handles store selection, EAN/Name capability filtering, and national coverage.
+ * Hook para gestionar la lista de tiendas para las búsquedas de Benchmark y Radar.
+ * Gestiona la selección de tiendas, el filtrado por capacidad (EAN/Nombre) y la cobertura nacional.
  *
- * @param isRadar - If true, ignores certain hardcoded store exclusions (if any).
- * @param activeTab - Current search mode ('name' or 'ean') used to filter store capabilities.
- * @returns Object with available stores, handlers for toggling, and selection counts.
+ * @param isRadar - Si es true, ignora ciertas exclusiones de tiendas predefinidas (si las hay).
+ * @param activeTab - Modo de búsqueda actual ('name' o 'ean') utilizado para filtrar las capacidades de la tienda.
+ * @returns Objeto con las tiendas disponibles, manejadores para alternar selección y recuentos.
  */
 export const useStoreManagement = (isRadar: boolean, activeTab: string) => {
   useEffect(() => {
-    // Security cleanup of legacy storage keys
+    // Limpieza de seguridad de claves de almacenamiento heredadas
     localStorage.removeItem('customBenchmarkStores');
   }, []);
 
-  // Load initial store list from the centralized registry
+  // Carga la lista de tiendas inicial desde el registro centralizado
   const [stores, setStores] = useState<Store[]>(getDefaultStoreList());
 
   /**
-   * Stores visible in the current UI tab.
-   * Filters stores by their capability (e.g., if Name mode, all are visible; if EAN, only EAN-capable ones).
+   * Tiendas visibles en la pestaña actual de la interfaz de usuario.
+   * Filtra las tiendas por su capacidad (ej. en modo Nombre todas son visibles; en modo EAN, solo las que soportan EAN).
    */
   const visibleStores = useMemo(() => {
-    // Centralized national coverage logic
+    // Lógica de cobertura nacional centralizada
     const allStores = getStoresByLocation(stores, 'national');
 
-    // Mode-based capability filtering
+    // Filtrado de capacidad basado en el modo
     if (activeTab === 'name') return allStores;
 
-    // Filters out stores that don't support direct EAN search (e.g., D1, Makro)
+    // Filtra las tiendas que no soportan búsqueda directa por EAN (ej. D1, Makro)
     return allStores.filter((s) => canSearchByEan(s.id));
   }, [stores, activeTab]);
 
   /**
-   * Stores available for interaction (after applying specific exclusions).
+   * Tiendas disponibles para interacción (después de aplicar exclusiones específicas).
    */
-  const filteredStores = visibleStores; // Simplified as manualStoreIds is currently empty
+  const filteredStores = visibleStores; // Simplificado ya que manualStoreIds está actualmente vacío
 
   /**
-   * Toggles the 'enabled' state of a specific store.
+   * Alterna el estado 'enabled' de una tienda específica.
    */
   const handleStoreToggle = (storeId: string) => {
     setStores((prev) => prev.map((s) => (s.id === storeId ? { ...s, enabled: !s.enabled } : s)));
   };
 
   /**
-   * Selects or deselects all currently visible stores.
+   * Selecciona o deselecciona todas las tiendas visibles actualmente.
    */
   const handleSelectAllStores = () => {
     const allEnabled = filteredStores.every((s) => s.enabled);
     setStores((prev) =>
       prev.map((s) => {
-        // Only affect stores visible in the current view/tab
+        // Solo afecta a las tiendas visibles en la vista/pestaña actual
         if (filteredStores.some((fs) => fs.id === s.id)) {
           return { ...s, enabled: !allEnabled };
         }

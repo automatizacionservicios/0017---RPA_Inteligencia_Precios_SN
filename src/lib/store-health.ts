@@ -48,8 +48,8 @@ export const storeHealth = {
 
     const newConsecutiveErrors = current.consecutiveErrors + 1;
 
-    // If it fails 3 times in a row, marked as maintenance automatically
-    // Unless it's a manual or coming_soon store
+    // Si falla 3 veces seguidas, se marca automáticamente como mantenimiento
+    // A menos que sea una tienda manual o próximamente (coming_soon)
     let newStatus: StoreStatus = current.status;
     if (
       newConsecutiveErrors >= 3 &&
@@ -75,7 +75,7 @@ export const storeHealth = {
 
     if (!stored) return defaultStatus;
 
-    // If hardcoded is 'manual' or 'coming_soon', we respect that always
+    // Si el estado predefinido es 'manual' o 'coming_soon', lo respetamos siempre
     if (defaultStatus === 'manual' || defaultStatus === 'coming_soon') return defaultStatus;
 
     return stored.status;

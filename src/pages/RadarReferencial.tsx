@@ -1,6 +1,6 @@
 /* eslint-disable */
-// Preserving legacy business logic to avoid regressions
-import { useState, useEffect } from 'react';
+// Preservando la lógica de negocio heredada para evitar regresiones
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -29,7 +29,7 @@ const RadarReferencial = () => {
 
   const [, _setCurrentQuery] = useState('');
 
-  // Handle initial search from navigation
+  // Manejar la búsqueda inicial desde la navegación
   useEffect(() => {
     const quickSearch = location.state?.quickSearch;
 
@@ -38,70 +38,74 @@ const RadarReferencial = () => {
     }
   }, [location.state]);
 
-  const handleSearch = async (
-    searchMode: 'product' | 'store-catalog',
-    productName: string,
-    productType: string,
-    presentation: string,
-    selectedStores: Store[],
-    advancedOptions: any,
-    storeId?: string,
-    keywords?: string[],
-    ean?: string,
-    brand?: string,
-    category?: string,
-    productLimit?: number,
-    selectedLocationId?: string
-  ) => {
-    const locId = selectedLocationId || locationId;
-    setIsLoading(true);
-    _setCurrentQuery(productName || ean || '');
-    setResults(null);
+  const handleSearch = useCallback(
+    async (
+      searchMode: 'product' | 'store-catalog',
+      productName: string,
+      productType: string,
+      presentation: string,
+      selectedStores: Store[],
+      advancedOptions: any,
+      storeId?: string,
+      keywords?: string[],
+      ean?: string,
+      brand?: string,
+      category?: string,
+      productLimit?: number,
+      selectedLocationId?: string
+    ) => {
+      const locId = selectedLocationId || locationId;
+      setIsLoading(true);
+      _setCurrentQuery(productName || ean || '');
+      setResults(null);
 
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/price-scraper`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            searchMode,
-            productName,
-            selectedStores,
-            advancedOptions,
-            keywords,
-            ean,
-            brand,
-            category,
-            productLimit,
-            locationId: locId,
-          }),
-        }
-      );
+      try {
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/price-scraper`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              searchMode,
+              productName,
+              selectedStores,
+              advancedOptions,
+              keywords,
+              ean,
+              brand,
+              category,
+              productLimit,
+              locationId: locId,
+              isRadar: true,
+            }),
+          }
+        );
 
-      if (!response.ok) throw new Error('Error al realizar la búsqueda');
+        if (!response.ok) throw new Error('Error al realizar la búsqueda');
 
-      const data: BenchmarkResponse = await response.json();
+        const data: BenchmarkResponse = await response.json();
 
-      setResults({
-        ...data,
-        products: data.products || [],
-        searchQuery: productName || ean || data.searchQuery,
-        timestamp: new Date().toISOString(),
-      });
+        setResults({
+          ...data,
+          products: data.products || [],
+          searchQuery: productName || ean || data.searchQuery,
+          timestamp: new Date().toISOString(),
+        });
 
-      setIsResultsModalOpen(true);
-      toast.success('Análisis híbrido completado');
-    } catch (error) {
-      console.error('Search error:', error);
-      toast.error('Error al sincronizar datos');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        setIsResultsModalOpen(true);
+        toast.success('Análisis híbrido completado');
+      } catch (error) {
+        console.error('Search error:', error);
+        toast.error('Error al sincronizar datos');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [locationId]
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-stone-50">

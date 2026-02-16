@@ -1,8 +1,8 @@
 import { Store } from '@/types/store';
 
 /**
- * Single source of truth for all stores supported by the application.
- * All store IDs here must match the strategies in the backend (price-scraper).
+ * Única fuente de verdad para todas las tiendas soportadas por la aplicación.
+ * Todos los IDs de tiendas aquí deben coincidir con las estrategias en el backend (price-scraper).
  */
 export const SUPPORTED_STORES: Store[] = [
   { id: 'carulla', name: 'Carulla', enabled: true, urls: ['carulla.com'] },
@@ -25,7 +25,7 @@ export const SUPPORTED_STORES: Store[] = [
 ];
 
 /**
- * Helper to get a copy of stores with default 'enabled' state
+ * Ayudante para obtener una copia de las tiendas con el estado 'enabled' por defecto
  */
 export const getDefaultStoreList = (): Store[] => {
   return SUPPORTED_STORES.map((s) => ({ ...s }));

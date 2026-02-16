@@ -3,27 +3,27 @@ import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
 /**
- * Interface representing a product item in the Pareto/Audit list.
+ * Interfaz que representa un producto en la lista de Pareto/Auditoría.
  */
 export interface ParetoItem {
   id: string;
-  /** Human-readable name of the product */
+  /** Nombre legible del producto */
   productName: string;
-  /** Specific keywords for fuzzy search refinement */
+  /** Palabras clave específicas para el refinamiento de la búsqueda difusa */
   keywords: string[];
-  /** Unique product identifier (ean-13) */
+  /** Identificador único del producto (EAN-13) */
   ean?: string;
-  /** User-defined target price for competitiveness analysis */
+  /** Precio objetivo definido por el usuario para el análisis de competitividad */
   targetPrice?: number;
-  /** Current status of the audit for this item */
+  /** Estado actual de la auditoría para este elemento */
   status: 'pending' | 'searching' | 'completed' | 'error';
-  /** Whether the user has selected this item for the next audit run */
+  /** Indica si el usuario ha seleccionado este elemento para la próxima ejecución de auditoría */
   selected: boolean;
-  /** Collected results from all retailers for this item */
+  /** Resultados recopilados de todos los minoristas para este elemento */
   foundProducts?: import('@/types/benchmark').MarketProduct[];
 }
 
-// Helper function to format Excel data into ParetoItem[]
+// Función auxiliar para formatear datos de Excel en ParetoItem[]
 export const formatExcelData = (data: Record<string, unknown>[]): ParetoItem[] => {
   return data
     .map((row: Record<string, unknown>) => {
@@ -65,8 +65,8 @@ export const formatExcelData = (data: Record<string, unknown>[]): ParetoItem[] =
 };
 
 /**
- * Hook to manage data ingestion and state for the Pareto audit list.
- * Supports manual pasting, Excel uploads, and Google Sheets integration.
+ * Hook para gestionar la ingesta de datos y el estado de la lista de auditoría de Pareto.
+ * Soporta pegado manual, carga de archivos Excel e integración con Google Sheets.
  */
 export const useParetoData = () => {
   const [items, setItems] = useState<ParetoItem[]>([]);
@@ -77,7 +77,7 @@ export const useParetoData = () => {
   const [isSheetDialogOpen, setIsSheetDialogOpen] = useState(false);
 
   /**
-   * Processes raw text pasted from Excel or Google Sheets (Tab-separated).
+   * Procesa texto sin formato pegado desde Excel o Google Sheets (separado por tabulaciones).
    */
   const handlePaste = (text: string) => {
     if (!text) return;
@@ -103,8 +103,8 @@ export const useParetoData = () => {
   };
 
   /**
-   * General XLSX sheet processing logic.
-   * Handles column mapping for product name, EAN, keywords, and prices.
+   * Lógica general de procesamiento de hojas XLSX.
+   * Gestiona el mapeo de columnas para nombre de producto, EAN, palabras clave y precios.
    */
   const processSheet = (workbook: XLSX.WorkBook, sheetName: string) => {
     const worksheet = workbook.Sheets[sheetName];
@@ -121,7 +121,7 @@ export const useParetoData = () => {
   };
 
   /**
-   * Imports data from a public Google Sheets URL using its Export endpoint.
+   * Importa datos desde una URL pública de Google Sheets utilizando su endpoint de exportación.
    */
   const loadFromGSheet = async (url: string) => {
     let sheetId = '';

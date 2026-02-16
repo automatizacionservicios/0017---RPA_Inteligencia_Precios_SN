@@ -3,17 +3,17 @@ import { toast } from 'sonner';
 import { Store, AdvancedOptions } from '@/hooks/useStoreManagement';
 
 interface UseBenchmarkSearchProps {
-  /** Initial search query (from URL or navigation) */
+  /** Consulta de búsqueda inicial (desde URL o navegación) */
   initialSearch?: string | null;
-  /** Current search mode (EAN vs Name) */
+  /** Modo de búsqueda actual (EAN vs Nombre) */
   isEanMode?: boolean;
-  /** Global loading state */
+  /** Estado de carga global */
   isLoading: boolean;
-  /** Current list of stores with their enabled state */
+  /** Lista actual de tiendas con su estado de activación */
   stores: Store[];
-  /** Search configuration (freshness, deep research) */
+  /** Configuración de búsqueda (frescura, investigación profunda) */
   advancedOptions: AdvancedOptions;
-  /** Main search callback to the parent component */
+  /** Callback de búsqueda principal al componente padre */
   onSearch: (
     searchMode: 'product' | 'store-catalog',
     productName: string,
@@ -26,19 +26,20 @@ interface UseBenchmarkSearchProps {
     ean?: string,
     brand?: string,
     category?: string,
-    productLimit?: number
+    productLimit?: number,
+    selectedLocationId?: string
   ) => void | Promise<void>;
-  /** Current active UI tab */
+  /** Pestaña de la interfaz de usuario activa actualmente */
   activeTab: string;
-  /** Setter for the active UI tab */
+  /** Selector para la pestaña activa de la interfaz de usuario */
   setActiveTab: (tab: string) => void;
-  /** If true, triggers handleProductSearch on mount if initialSearch exists */
+  /** Si es true, activa handleProductSearch al montar si existe initialSearch */
   autoTrigger?: boolean;
 }
 
 /**
- * Hook to manage state and search execution for the Benchmark module.
- * Standardizes the payload for the edge function.
+ * Hook para gestionar el estado y la ejecución de la búsqueda para el módulo Benchmark.
+ * Estandariza el payload para la edge function.
  */
 export const useBenchmarkSearch = ({
   initialSearch,
@@ -50,23 +51,23 @@ export const useBenchmarkSearch = ({
   setActiveTab,
   autoTrigger,
 }: UseBenchmarkSearchProps) => {
-  // Search Criteria State
+  // Estado de los criterios de búsqueda
   const [productName, setProductName] = useState('');
   const [brandName, setBrandName] = useState('');
   const [eanCode, setEanCode] = useState('');
   const [keywords, setKeywords] = useState('');
 
-  // Store Catalog Mode State
+  // Estado del modo de catálogo de tienda
   const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState('');
   const [catalogCategory, setCatalogCategory] = useState('all');
   const [catalogLimit, setCatalogLimit] = useState(50);
 
   /**
-   * Effect to handle initial search query from URL or navigation.
+   * Efecto para gestionar la consulta de búsqueda inicial desde la URL o navegación.
    */
   useEffect(() => {
     if (initialSearch) {
-      // EAN search usually starts with 770
+      // La búsqueda por EAN suele empezar por 770
       if (initialSearch.match(/^\d{8,14}$/)) {
         setEanCode(initialSearch);
         setActiveTab('ean');
@@ -78,12 +79,12 @@ export const useBenchmarkSearch = ({
   }, [initialSearch, setActiveTab]);
 
   /**
-   * Executes a Product Search (Name or EAN mode).
+   * Ejecuta una búsqueda de producto (modo Nombre o EAN).
    */
   const handleProductSearch = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation: Search term or EAN required
+    // Validación: Se requiere término de búsqueda o EAN
     if (activeTab === 'name' && !productName.trim()) {
       toast.error('Por favor ingresa un nombre de producto');
       return;
@@ -111,16 +112,17 @@ export const useBenchmarkSearch = ({
       'all', // presentation (legacy)
       selectedStoresList,
       advancedOptions,
-      undefined, // storeId (not needed for general search)
+      undefined, // storeId
       keywordsList,
-      activeTab === 'ean' ? eanCode : undefined,
-      eanCode || undefined,
-      brandName || undefined
+      activeTab === 'ean' ? eanCode : undefined, // 9. ean
+      brandName || undefined, // 10. brand
+      undefined, // 11. category
+      undefined // 12. productLimit
     );
   };
 
   /**
-   * Executes a Store Catalog extraction.
+   * Ejecuta una extracción del catálogo de la tienda.
    */
   const handleCatalogSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -134,13 +136,13 @@ export const useBenchmarkSearch = ({
 
     onSearch(
       'store-catalog',
-      '', // productName (not needed for catalog)
+      '', // productName (no es necesario para catálogo)
       'all',
       'all',
       [store],
       advancedOptions,
       selectedStoreForCatalog,
-      [], // keywords (not needed for catalog)
+      [], // palabras clave (no es necesario para catálogo)
       undefined, // ean
       undefined, // brand
       catalogCategory === 'all' ? undefined : catalogCategory,
@@ -148,38 +150,36 @@ export const useBenchmarkSearch = ({
     );
   };
 
-  // Ref to ensure autoTrigger only runs once per component mount
+  // Referencia para asegurar que autoTrigger solo se ejecute una vez por montaje de componente
   const hasTriggered = useRef(false);
 
   /**
-   * Effect to handle automatic search trigger from external navigation (e.g. Home Search)
+   * Efecto para gestionar el activador de búsqueda automática desde navegación externa (ej. Búsqueda desde Inicio)
    */
   useEffect(() => {
     // We only trigger if autoTrigger is true, we have an initial search,
     // we have stores loaded, and WE HAVEN'T TRIGGERED YET
     if (autoTrigger && initialSearch && stores.length > 0 && !isLoading && !hasTriggered.current) {
-      hasTriggered.current = true; // Mark as triggered immediately
+      const isEan = /^\d{8,14}$/.test(initialSearch);
+      const selectedStoresList = stores.filter((s) => s.enabled);
 
-      const timer = setTimeout(() => {
-        const isEan = /^\d{8,14}$/.test(initialSearch);
-        const selectedStoresList = stores.filter((s) => s.enabled);
-
-        if (selectedStoresList.length > 0) {
-          onSearch(
-            'product',
-            !isEan ? initialSearch : '',
-            'all',
-            'all',
-            selectedStoresList,
-            advancedOptions,
-            undefined,
-            [],
-            isEan ? initialSearch : undefined,
-            brandName || undefined
-          );
-        }
-      }, 300);
-      return () => clearTimeout(timer);
+      if (selectedStoresList.length > 0) {
+        hasTriggered.current = true; // Marcar solo si realmente vamos a llamar a onSearch
+        onSearch(
+          'product',
+          !isEan ? initialSearch : '',
+          'all',
+          'all',
+          selectedStoresList,
+          advancedOptions,
+          undefined,
+          [],
+          isEan ? initialSearch : undefined,
+          brandName || undefined,
+          undefined, // category
+          undefined // productLimit
+        );
+      }
     }
   }, [autoTrigger, initialSearch, stores, isLoading, onSearch, advancedOptions, brandName]);
 

@@ -15,7 +15,7 @@ serve(async (req) => {
   try {
     const { message, products, metadata, searchQuery } = await req.json();
 
-    // Use official Gemini API Key
+    // Usar la clave API oficial de Gemini
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
       console.error('❌ GEMINI_API_KEY is missing in Edge Function Secrets');
@@ -28,7 +28,7 @@ serve(async (req) => {
       );
     }
 
-    // Validate products
+    // Validar productos
     if (!products || !Array.isArray(products) || products.length === 0) {
       console.warn('⚠️ No products provided in request');
       return new Response(
@@ -83,16 +83,15 @@ BÚSQUEDA REALIZADA: "${searchQuery}"
 |--------|----------|--------|--------------|--------------|
 ${productsTable}
 
-${
-  metadata
-    ? `
+${metadata
+        ? `
 📈 METADATA DE VALIDACIÓN:
 - Productos validados: ${metadata.aiValidation?.validated || 0}
 - Productos rechazados: ${metadata.aiValidation?.rejected || 0}
 - Modelo usado: ${metadata.model}
 `
-    : ''
-}
+        : ''
+      }
 
 🎯 TU MISIÓN:
 1. Analiza SOLO los datos de la tabla anterior
@@ -116,7 +115,7 @@ ${
 
 Responde en base ÚNICAMENTE a los datos de la tabla anterior.`;
 
-    // Try models in order of preference based on available list found in logs
+    // Intentar modelos en orden de preferencia según la lista disponible encontrada en los logs
     const models = [
       'gemini-2.0-flash',
       'gemini-flash-latest',

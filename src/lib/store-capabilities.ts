@@ -1,17 +1,17 @@
 /**
- * Store Capabilities Classification
- * Defines which stores support which search modes (name vs EAN)
+ * Clasificación de Capacidades de la Tienda
+ * Define qué tiendas soportan qué modos de búsqueda (nombre vs EAN)
  */
 
-// Stores that DO NOT work with EAN search (only support name/catalog search)
+// Tiendas que NO funcionan con búsqueda por EAN (solo soportan búsqueda por nombre/catálogo)
 export const NO_EAN_STORES = [
-  'carulla', // WAF blocked on API for EAN search
-  'd1', // Instaleap - Name only according to user
-  'makro', // Instaleap - Name only according to user
-  'rappi', // User request: Name only
+  'carulla', // Bloqueado por WAF en la API para búsqueda por EAN
+  'd1', // Instaleap - Solo nombre según el usuario
+  'makro', // Instaleap - Solo nombre según el usuario
+  'rappi', // Solicitud del usuario: Solo nombre
 ];
 
-// Stores that support name-based search (All 17 stores)
+// Tiendas que soportan búsqueda basada en nombre (Las 17 tiendas)
 export const NAME_SEARCH_STORES = [
   'carulla',
   'jumbo',
@@ -33,25 +33,25 @@ export const NAME_SEARCH_STORES = [
 ];
 
 /**
- * Check if a store supports name-based search
+ * Comprueba si una tienda soporta búsqueda basada en nombre
  */
 export function canSearchByName(_storeId: string): boolean {
-  return true; // Now all stores support name search
+  return true; // Ahora todas las tiendas soportan búsqueda por nombre
 }
 
 /**
- * Check if a store supports EAN-based search
+ * Comprueba si una tienda soporta búsqueda basada en EAN
  */
 export function canSearchByEan(storeId: string): boolean {
   return !NO_EAN_STORES.includes(storeId);
 }
 
 /**
- * Check if a store is Name-only (doesn't support EAN search)
+ * Comprueba si una tienda es solo de nombre (no soporta búsqueda por EAN)
  */
 export function isNameOnly(storeId: string): boolean {
   return NO_EAN_STORES.includes(storeId);
 }
 
-// Keeping legacy export for compatibility if used elsewhere, but with inverted logic
+// Manteniendo la exportación heredada para compatibilidad si se utiliza en otro lugar, pero con lógica invertida
 export const isEanOnly = isNameOnly;

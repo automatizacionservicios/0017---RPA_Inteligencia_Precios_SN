@@ -18,8 +18,8 @@ import { useBenchmarkSearch } from '@/hooks/useBenchmarkSearch';
 import { StoreCard } from './benchmark/StoreCard';
 interface BenchmarkSearchProps {
   /**
-   * Search execution callback.
-   * Handles both individual product search and store catalog scraping.
+   * Callback para la ejecución de la búsqueda.
+   * Gestiona tanto la búsqueda individual de productos como el scraping del catálogo de tienda.
    */
   onSearch: (
     searchMode: 'product' | 'store-catalog',
@@ -33,26 +33,31 @@ interface BenchmarkSearchProps {
     ean?: string,
     brand?: string,
     category?: string,
-    productLimit?: number
+    productLimit?: number,
+    selectedLocationId?: string
   ) => void | Promise<void>;
-  /** Global loading state */
+  /** Estado de carga global */
   isLoading: boolean;
-  /** Initial search query (from URL or navigation) */
+  /** Consulta de búsqueda inicial (desde URL o navegación) */
   initialSearch?: string | null;
-  /** 'product' for general search, 'catalog' for full store browsing */
+  /** 'product' para búsqueda general, 'catalog' para navegación completa de tienda */
   mode?: 'product' | 'catalog';
-  /** Forces starting in EAN mode */
+  /** Fuerza el inicio en modo EAN */
   isEanMode?: boolean;
-  /** If true, shows unfiltered store list for Radar audit */
+  /** Si es true, muestra la lista de tiendas sin filtrar para la auditoría Radar */
   isRadar?: boolean;
   /** If true, triggers the search automatically when initialSearch is provided */
   autoTrigger?: boolean;
+  /** Location ID for filtered search */
+  locationId?: string;
+  /** Callback to change selected location */
+  setLocationId?: (id: string) => void;
 }
 
 /**
- * Main Benchmark Search UI.
- * Orchestrates product name search, EAN search, and Store Catalog extraction.
- * Integrates with useStoreManagement for store selection and useBenchmarkSearch for search logic.
+ * UI principal de búsqueda Benchmark.
+ * Orquesta la búsqueda por nombre de producto, búsqueda por EAN y extracción del catálogo de tienda.
+ * Se integra con useStoreManagement para la selección de tiendas y useBenchmarkSearch para la lógica de búsqueda.
  */
 const BenchmarkSearch = ({
   onSearch,
@@ -62,6 +67,8 @@ const BenchmarkSearch = ({
   isEanMode = false,
   isRadar = false,
   autoTrigger = false,
+  locationId: _locationId,
+  setLocationId: _setLocationId,
 }: BenchmarkSearchProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!!initialSearch);
   const [activeTab, setActiveTab] = useState(isEanMode ? 'ean' : 'name');

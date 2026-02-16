@@ -1,5 +1,5 @@
 /**
- * Utility functions for data processing and formatting.
+ * Funciones de utilidad para el procesamiento y formateo de datos.
  */
 
 /**
@@ -70,7 +70,7 @@ export function normalizeText(text: string): string {
 }
 
 /**
- * Cleans a price string and converts it to a number.
+ * Limpia una cadena de precio y la convierte en un número.
  */
 export const cleanPrice = (price: string | number | undefined): number => {
   if (price === undefined || price === null) return 0;
@@ -80,7 +80,7 @@ export const cleanPrice = (price: string | number | undefined): number => {
 };
 
 /**
- * Formats a number as a localized price string ($1.200).
+ * Formatea un número como una cadena de precio localizada ($1.200).
  */
 export const formatPrice = (price: number | undefined): string => {
   if (price === undefined || price === null || isNaN(price)) return '---';
