@@ -472,12 +472,12 @@ const BenchmarkResults = ({
                   const groupTargetWeight =
                     weights.length > 0
                       ? // Usar la moda o el valor que más se repite
-                      Object.entries(
-                        weights.reduce(
-                          (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
-                          {} as Record<number, number>
-                        )
-                      ).sort((a, b) => b[1] - a[1])[0][0]
+                        Object.entries(
+                          weights.reduce(
+                            (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
+                            {} as Record<number, number>
+                          )
+                        ).sort((a, b) => b[1] - a[1])[0][0]
                       : null;
 
                   // Usar todos los productos válidos para el Benchmark real (no excluir por gramaje, solo alertar)
@@ -606,10 +606,11 @@ const BenchmarkResults = ({
                                     <TableCell className="pl-12 py-5">
                                       <div className="flex items-center gap-3">
                                         <div
-                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice
-                                            ? 'border-emerald-200 ring-4 ring-emerald-500/10'
-                                            : 'border-stone-100'
-                                            }`}
+                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${
+                                            isLowestPrice
+                                              ? 'border-emerald-200 ring-4 ring-emerald-500/10'
+                                              : 'border-stone-100'
+                                          }`}
                                         >
                                           {getStoreBrand(product.store).icon ? (
                                             <img
@@ -671,12 +672,13 @@ const BenchmarkResults = ({
 
                                             {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
                                             {groupTargetWeight &&
-                                              extractGrams(product.productName)?.amount !== undefined &&
+                                              extractGrams(product.productName)?.amount !==
+                                                undefined &&
                                               Math.abs(
                                                 (extractGrams(product.productName)?.amount || 0) -
-                                                Number(groupTargetWeight)
+                                                  Number(groupTargetWeight)
                                               ) >
-                                              Number(groupTargetWeight) * 0.1 && (
+                                                Number(groupTargetWeight) * 0.1 && (
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[7px] font-black text-amber-700 uppercase tracking-tighter shadow-sm shrink-0">
                                                   <AlertTriangle className="w-2 h-2 text-amber-500" />
                                                   VERIF. GRAM
@@ -772,13 +774,14 @@ const BenchmarkResults = ({
                                     </TableCell>
                                     <TableCell>
                                       <div
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability
-                                          .toLowerCase()
-                                          .includes('disponible') ||
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${
+                                          product.availability
+                                            .toLowerCase()
+                                            .includes('disponible') ||
                                           product.availability === 'En stock'
-                                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                          : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
-                                          }`}
+                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                            : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
+                                        }`}
                                       >
                                         <div
                                           className={`w-1.5 h-1.5 rounded-full ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock' ? 'bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`}

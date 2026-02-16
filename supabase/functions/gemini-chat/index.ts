@@ -83,15 +83,16 @@ BÚSQUEDA REALIZADA: "${searchQuery}"
 |--------|----------|--------|--------------|--------------|
 ${productsTable}
 
-${metadata
-        ? `
+${
+  metadata
+    ? `
 📈 METADATA DE VALIDACIÓN:
 - Productos validados: ${metadata.aiValidation?.validated || 0}
 - Productos rechazados: ${metadata.aiValidation?.rejected || 0}
 - Modelo usado: ${metadata.model}
 `
-        : ''
-      }
+    : ''
+}
 
 🎯 TU MISIÓN:
 1. Analiza SOLO los datos de la tabla anterior

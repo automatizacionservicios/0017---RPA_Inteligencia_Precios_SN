@@ -144,10 +144,11 @@ export const GeminiChatInterface = ({
                 className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}
               >
                 <div
-                  className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border transition-transform hover:scale-105 ${msg.role === 'user'
+                  className={`w-9 h-9 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-sm border transition-transform hover:scale-105 ${
+                    msg.role === 'user'
                       ? 'bg-stone-900 border-stone-800 text-white'
                       : 'bg-white border-stone-100'
-                    }`}
+                  }`}
                 >
                   {msg.role === 'user' ? (
                     <User className="w-5 h-5" />
@@ -157,14 +158,16 @@ export const GeminiChatInterface = ({
                 </div>
 
                 <div
-                  className={`flex flex-col max-w-[80%] ${msg.role === 'user' ? 'items-end text-right' : 'items-start'
-                    }`}
+                  className={`flex flex-col max-w-[80%] ${
+                    msg.role === 'user' ? 'items-end text-right' : 'items-start'
+                  }`}
                 >
                   <div
-                    className={`p-4 rounded-3xl text-[13px] font-medium leading-relaxed shadow-sm transition-all ${msg.role === 'user'
+                    className={`p-4 rounded-3xl text-[13px] font-medium leading-relaxed shadow-sm transition-all ${
+                      msg.role === 'user'
                         ? 'bg-emerald-600 text-white rounded-tr-none shadow-emerald-200/20'
                         : 'bg-white border border-stone-100 text-stone-700 rounded-tl-none'
-                      }`}
+                    }`}
                   >
                     <p className="whitespace-pre-wrap">{msg.content}</p>
                   </div>
