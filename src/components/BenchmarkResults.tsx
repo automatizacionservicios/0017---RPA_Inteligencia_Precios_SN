@@ -36,6 +36,7 @@ import { exportToExcel } from '@/lib/excel-export';
 import { getStoreBrand } from '@/lib/store-branding';
 import ResultsFilters from './ResultsFilters';
 import { GeminiChatButton } from './gemini/GeminiChatButton';
+import { extractGrams } from '@/core/utils';
 import type { MarketProduct, BenchmarkMetadata } from '@/types/benchmark';
 
 interface BenchmarkResultsProps {
@@ -50,19 +51,6 @@ interface BenchmarkResultsProps {
 
 type SortField = 'price' | 'pricePerGram' | 'store';
 type SortDirection = 'asc' | 'desc';
-
-// Extract grammage from name - Global helper
-const getWeight = (str: string) => {
-  if (!str) return null;
-  const match = str.toLowerCase().match(/(\d+(?:\.\d+)?)\s*(g|gr|ml|kg|oz|lb)\b/i);
-  if (match) {
-    let value = parseFloat(match[1]);
-    const unit = match[2].toLowerCase();
-    if (unit.startsWith('k')) value *= 1000;
-    return Math.round(value);
-  }
-  return null;
-};
 
 const BenchmarkResults = ({
   products,
@@ -155,13 +143,13 @@ const BenchmarkResults = ({
     filteredProducts.forEach((product) => {
       if (!product.ean) {
         const tokens = getTokens(product.productName);
-        const weight = product.gramsAmount || getWeight(product.productName);
+        const weight = product.gramsAmount || extractGrams(product.productName).amount;
         if (tokens.length === 0) return;
 
         // Try to find a match in existing groups based on token overlap + grammage
         const matchKey = Object.keys(groups).find((key) => {
           return groups[key].some((p) => {
-            const pWeight = p.gramsAmount || getWeight(p.productName);
+            const pWeight = p.gramsAmount || extractGrams(p.productName).amount;
             // Must have same weight if both have one. Allow 5% tolerance for rounding difference
             if (weight && pWeight && Math.abs(weight - pWeight) > Math.max(weight, pWeight) * 0.05)
               return false;
@@ -474,7 +462,7 @@ const BenchmarkResults = ({
 
                   // Calcular el Gramaje Objetivo del grupo (el más frecuente o el mayor/base)
                   const weights = validProducts
-                    .map((p) => p.gramsAmount || getWeight(p.productName))
+                    .map((p) => p.gramsAmount || extractGrams(p.productName).amount)
                     .filter((w) => w !== null) as number[];
                   const groupTargetWeight =
                     weights.length > 0
@@ -614,8 +602,8 @@ const BenchmarkResults = ({
                                       <div className="flex items-center gap-3">
                                         <div
                                           className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice
-                                              ? 'border-emerald-200 ring-4 ring-emerald-500/10'
-                                              : 'border-stone-100'
+                                            ? 'border-emerald-200 ring-4 ring-emerald-500/10'
+                                            : 'border-stone-100'
                                             }`}
                                         >
                                           {getStoreBrand(product.store).icon ? (
@@ -679,10 +667,10 @@ const BenchmarkResults = ({
                                             {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
                                             {groupTargetWeight &&
                                               (product.gramsAmount ||
-                                                getWeight(product.productName)) &&
+                                                extractGrams(product.productName).amount) &&
                                               Math.abs(
                                                 (product.gramsAmount ||
-                                                  getWeight(product.productName))! -
+                                                  extractGrams(product.productName).amount)! -
                                                 Number(groupTargetWeight)
                                               ) >
                                               Number(groupTargetWeight) * 0.1 && (
@@ -782,11 +770,11 @@ const BenchmarkResults = ({
                                     <TableCell>
                                       <div
                                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability
-                                            .toLowerCase()
-                                            .includes('disponible') ||
-                                            product.availability === 'En stock'
-                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                            : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
+                                          .toLowerCase()
+                                          .includes('disponible') ||
+                                          product.availability === 'En stock'
+                                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                          : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
                                           }`}
                                       >
                                         <div

@@ -29,6 +29,45 @@ import { storeHealth } from '@/lib/store-health';
 import { canSearchByEan } from '@/lib/store-capabilities';
 
 
+const SectionHeader = ({
+  badge,
+  title,
+  highlight,
+  centered = false,
+}: {
+  badge: string;
+  title: string;
+  highlight?: string;
+  centered?: boolean;
+}) => (
+  <div
+    className={`flex flex-col mb-12 animate-fade-in ${centered ? 'text-center' : 'text-center md:text-left'
+      }`}
+  >
+    <motion.div
+      initial={{ opacity: 0, x: centered ? 0 : -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true }}
+      className={`flex items-center gap-3 mb-2 ${centered ? 'justify-center' : 'justify-center md:justify-start'
+        }`}
+    >
+      <div className="h-0.5 w-12 bg-emerald-500 rounded-full" />
+      <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">
+        {badge}
+      </span>
+    </motion.div>
+    <motion.h2
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: 0.1 }}
+      className="text-4xl md:text-5xl font-black text-stone-900 uppercase tracking-tighter leading-none"
+    >
+      {title} {highlight && <span className="text-emerald-600 italic">{highlight}</span>}
+    </motion.h2>
+  </div>
+);
+
 const Home = () => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
@@ -305,28 +344,11 @@ const Home = () => {
 
       {/* Bento Grid - Premium Redesign (Inspired by Reference Images) */}
       <section className="max-w-[1440px] mx-auto px-6 xl:px-12 py-24 relative z-20 -mt-24">
-        <div className="flex flex-col mb-12 animate-fade-in text-center md:text-left">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="flex items-center gap-3 mb-2 justify-center md:justify-start"
-          >
-            <div className="h-0.5 w-12 bg-emerald-500 rounded-full" />
-            <span className="text-[10px] font-black text-emerald-500 uppercase tracking-[0.4em]">
-              Ecosistema Profesional
-            </span>
-          </motion.div>
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-black text-stone-900 uppercase tracking-tighter"
-          >
-            Módulos de <span className="text-emerald-600 italic">Inteligencia</span>
-          </motion.h2>
-        </div>
+        <SectionHeader
+          badge="Ecosistema Profesional"
+          title="Módulos de"
+          highlight="Inteligencia"
+        />
         <div className="w-full">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 auto-rows-[240px]">
             {/* 1. BUSCADOR DE EANS (Large/Tall) */}
@@ -477,14 +499,12 @@ const Home = () => {
       {/* Store Showcase Section - Clickable (Image 1) */}
       <section className="max-w-[1700px] mx-auto px-6 xl:px-12 py-24 bg-stone-50/50">
         <div className="w-full">
-          <div className="text-center mb-16 space-y-3">
-            <h3 className="text-4xl font-black text-stone-900 uppercase tracking-tighter">
-              Fuentes Monitorizadas
-            </h3>
-            <p className="text-stone-400 font-bold text-[12px] uppercase tracking-[0.3em] opacity-80">
-              Retail Intelligence Network Colombia
-            </p>
-          </div>
+          <SectionHeader
+            badge="Retail Intelligence Network"
+            title="Fuentes"
+            highlight="Monitorizadas"
+            centered
+          />
 
           <div className="space-y-16">
             {/* Category 1: EAN + Name (Technical Identification) */}
@@ -541,14 +561,12 @@ const Home = () => {
       {/* Categories Section - Polish */}
       <section className="bg-white border-y border-stone-100">
         <div className="max-w-[1700px] mx-auto px-6 xl:px-12 py-24">
-          <div className="text-center mb-20 space-y-3">
-            <h3 className="text-4xl font-black text-stone-900 uppercase tracking-tighter leading-none">
-              Categorías Estratégicas
-            </h3>
-            <p className="text-stone-400 font-bold text-[12px] uppercase tracking-[0.3em]">
-              Verticales de Consumo Grupo Nutresa
-            </p>
-          </div>
+          <SectionHeader
+            badge="Verticales de Consumo"
+            title="Categorías"
+            highlight="Estratégicas"
+            centered
+          />
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6 w-full">
             {[
@@ -581,14 +599,12 @@ const Home = () => {
 
       {/* Enlaces de Interés - Visual Cards (Image 2) */}
       <section className="max-w-[1700px] mx-auto px-6 xl:px-12 py-24">
-        <div className="text-center mb-16">
-          <h3 className="text-4xl font-black text-stone-900 uppercase tracking-tighter mb-4">
-            Ecosistema Nutresa
-          </h3>
-          <p className="text-stone-400 font-bold text-[12px] uppercase tracking-[0.3em] opacity-80">
-            Conexiones Estratégicas y Herramientas
-          </p>
-        </div>
+        <SectionHeader
+          badge="Conexiones Estratégicas"
+          title="Ecosistema"
+          highlight="Nutresa"
+          centered
+        />
 
         <div className="grid md:grid-cols-3 gap-8 w-full">
           {interestLinks.map((link, index) => (

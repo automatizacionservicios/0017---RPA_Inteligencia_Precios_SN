@@ -16,6 +16,8 @@ export interface MarketProduct {
   discountPercentage?: number; // Porcentaje de descuento detectado
   isExternalLink?: boolean; // Si es un enlace de consulta externa
   image?: string; // URL de la imagen del producto
+  city?: string; // Ciudad de la consulta (Geo-localización)
+  sourceUrl?: string; // URL técnica original (API/Search)
 }
 
 export interface BenchmarkMetadata {
