@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
 import { Store, AdvancedOptions } from '@/hooks/useStoreManagement';
 
@@ -150,40 +150,41 @@ export const useBenchmarkSearch = ({
     );
   };
 
+  // Ref to ensure autoTrigger only runs once per component mount
+  const hasTriggered = useRef(false);
+
   /**
    * Effect to handle automatic search trigger from external navigation (e.g. Home Search)
    */
   useEffect(() => {
-    // We only trigger if autoTrigger is true and we have an initial search
-    if (autoTrigger && initialSearch && stores.length > 0 && !isLoading) {
+    // We only trigger if autoTrigger is true, we have an initial search, 
+    // we have stores loaded, and WE HAVEN'T TRIGGERED YET
+    if (autoTrigger && initialSearch && stores.length > 0 && !isLoading && !hasTriggered.current) {
+      hasTriggered.current = true; // Mark as triggered immediately
+
       const timer = setTimeout(() => {
-        // Validation inside the effect to ensure state has updated
         const isEan = /^\d{8,14}$/.test(initialSearch);
-        const currentTerm = isEan ? eanCode : productName;
-
-        // If the state hasn't synced yet, we use the initialSearch directly for the first call
-        const finalTerm = currentTerm || initialSearch;
-
         const selectedStoresList = stores.filter((s) => s.enabled);
+
         if (selectedStoresList.length > 0) {
           onSearch(
             'product',
-            !isEan ? finalTerm : '',
+            !isEan ? initialSearch : '',
             'all',
             'all',
             selectedStoresList,
             advancedOptions,
             undefined,
             [],
-            isEan ? finalTerm : undefined,
+            isEan ? initialSearch : undefined,
             brandName || undefined,
             categoryName || undefined
           );
         }
-      }, 300); // Slightly faster but safe
+      }, 300);
       return () => clearTimeout(timer);
     }
-  }, [autoTrigger, initialSearch, stores, isLoading, eanCode, productName, onSearch, advancedOptions, brandName, categoryName]);
+  }, [autoTrigger, initialSearch, stores.length, isLoading]); // Minimal dependencies
 
   return {
     productName,
