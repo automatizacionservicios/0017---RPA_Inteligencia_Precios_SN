@@ -54,7 +54,6 @@ export const useBenchmarkSearch = ({
   // Search Criteria State
   const [productName, setProductName] = useState('');
   const [brandName, setBrandName] = useState('');
-  const [categoryName, setCategoryName] = useState('');
   const [eanCode, setEanCode] = useState('');
   const [keywords, setKeywords] = useState('');
 
@@ -116,8 +115,8 @@ export const useBenchmarkSearch = ({
       undefined, // storeId (not needed for general search)
       keywordsList,
       activeTab === 'ean' ? eanCode : undefined,
-      brandName || undefined,
-      categoryName || undefined
+      eanCode || undefined,
+      brandName || undefined
     );
   };
 
@@ -177,8 +176,7 @@ export const useBenchmarkSearch = ({
             undefined,
             [],
             isEan ? initialSearch : undefined,
-            brandName || undefined,
-            categoryName || undefined
+            brandName || undefined
           );
         }
       }, 300);
@@ -191,8 +189,6 @@ export const useBenchmarkSearch = ({
     setProductName,
     brandName,
     setBrandName,
-    categoryName,
-    setCategoryName,
     eanCode,
     setEanCode,
     keywords,

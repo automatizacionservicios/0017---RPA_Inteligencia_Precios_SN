@@ -101,8 +101,6 @@ const BenchmarkSearch = ({
     setProductName,
     brandName,
     setBrandName,
-    categoryName,
-    setCategoryName,
     eanCode,
     setEanCode,
     keywords,
@@ -312,23 +310,7 @@ const BenchmarkSearch = ({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div className="space-y-4">
-                          <Label
-                            htmlFor="category"
-                            className="text-[11px] font-black text-stone-700 uppercase tracking-widest ml-1"
-                          >
-                            Categoría
-                          </Label>
-                          <Input
-                            id="category"
-                            placeholder="Ej: Café, Galletas..."
-                            value={categoryName}
-                            onChange={(e) => setCategoryName(e.target.value)}
-                            className="h-16 border-stone-100 bg-white/80 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all text-sm font-bold text-stone-800 px-6 rounded-2xl shadow-sm hover:border-stone-200"
-                          />
-                        </div>
-
+                      <div className="grid grid-cols-1 gap-8">
                         <div className="space-y-4">
                           <div className="flex items-center gap-2 ml-1">
                             <Label
