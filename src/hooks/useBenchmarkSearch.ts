@@ -154,17 +154,36 @@ export const useBenchmarkSearch = ({
    * Effect to handle automatic search trigger from external navigation (e.g. Home Search)
    */
   useEffect(() => {
+    // We only trigger if autoTrigger is true and we have an initial search
     if (autoTrigger && initialSearch && stores.length > 0 && !isLoading) {
-      // Small timeout to allow state synchronization
       const timer = setTimeout(() => {
-        const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
-        handleProductSearch(fakeEvent);
-      }, 500);
+        // Validation inside the effect to ensure state has updated
+        const isEan = /^\d{8,14}$/.test(initialSearch);
+        const currentTerm = isEan ? eanCode : productName;
+
+        // If the state hasn't synced yet, we use the initialSearch directly for the first call
+        const finalTerm = currentTerm || initialSearch;
+
+        const selectedStoresList = stores.filter((s) => s.enabled);
+        if (selectedStoresList.length > 0) {
+          onSearch(
+            'product',
+            !isEan ? finalTerm : '',
+            'all',
+            'all',
+            selectedStoresList,
+            advancedOptions,
+            undefined,
+            [],
+            isEan ? finalTerm : undefined,
+            brandName || undefined,
+            categoryName || undefined
+          );
+        }
+      }, 300); // Slightly faster but safe
       return () => clearTimeout(timer);
     }
-    // We only want this to run once on mount when autoTrigger is true
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoTrigger, initialSearch, stores.length > 0]);
+  }, [autoTrigger, initialSearch, stores, isLoading, eanCode, productName, onSearch, advancedOptions, brandName, categoryName]);
 
   return {
     productName,
