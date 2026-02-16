@@ -1,10 +1,6 @@
 {
-    "compilerOptions": {
-        "allowJs": true,
-        "lib": [
-            "deno.window",
-            "deno.ns",
-            "deno.unstable"
-        ]
-    }
+  "compilerOptions": {
+    "allowJs": true,
+    "lib": ["deno.window", "deno.ns", "deno.unstable"]
+  }
 }

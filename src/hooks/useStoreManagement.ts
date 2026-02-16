@@ -1,85 +1,76 @@
-import { useState, useEffect, useMemo } from "react";
-import { toast } from "sonner";
-import { canSearchByEan } from "@/lib/store-capabilities";
-import { getStoresByLocation } from "@/lib/store-coverage";
+import { useState, useEffect, useMemo } from 'react';
+import { canSearchByEan } from '@/lib/store-capabilities';
+import { getStoresByLocation } from '@/lib/store-coverage';
+import { Store, AdvancedOptions } from '@/types/store';
+import { getDefaultStoreList } from '@/lib/store-registry';
 
-export interface Store {
-    id: string;
-    name: string;
-    enabled: boolean;
-    urls: string[];
-}
-
-export interface AdvancedOptions {
-    searchRecency: 'day' | 'week' | 'month';
-    deepResearch: boolean;
-}
-
-export const manualStoreIds = [];
-
-
+/**
+ * Hook to manage the list of stores for Benchmark and Radar search.
+ * Handles store selection, EAN/Name capability filtering, and national coverage.
+ *
+ * @param isRadar - If true, ignores certain hardcoded store exclusions (if any).
+ * @param activeTab - Current search mode ('name' or 'ean') used to filter store capabilities.
+ * @returns Object with available stores, handlers for toggling, and selection counts.
+ */
 export const useStoreManagement = (isRadar: boolean, activeTab: string) => {
-    useEffect(() => {
-        // Limpieza de tiendas personalizadas antiguas (Seguridad)
-        localStorage.removeItem('customBenchmarkStores');
-    }, []);
+  useEffect(() => {
+    // Security cleanup of legacy storage keys
+    localStorage.removeItem('customBenchmarkStores');
+  }, []);
 
-    const [stores, setStores] = useState<Store[]>([
-        { id: 'carulla', name: 'Carulla', enabled: true, urls: ['carulla.com'] },
-        { id: 'jumbo', name: 'Jumbo', enabled: true, urls: ['jumbo.com.co'] },
-        { id: 'olimpica', name: 'Olímpica', enabled: true, urls: ['olimpica.com'] },
-        { id: 'exito', name: 'Éxito', enabled: true, urls: ['exito.com'] },
-        { id: 'd1', name: 'Tiendas D1', enabled: true, urls: ['domicilios.tiendasd1.com'] },
-        { id: 'makro', name: 'Makro', enabled: true, urls: ['tienda.makro.com.co'] },
-        { id: 'euro', name: 'Euro Supermercados', enabled: true, urls: ['www.eurosupermercados.com.co'] },
-        { id: 'vaquita', name: 'Vaquita Express', enabled: true, urls: ['vaquitaexpress.com.co'] },
-        { id: 'megatiendas', name: 'Megatiendas', enabled: true, urls: ['www.megatiendas.co'] },
-        { id: 'mercacentro', name: 'Mercacentro', enabled: true, urls: ['www.mercacentro.com'] },
-        { id: 'zapatoca', name: 'Mercados Zapatoca', enabled: true, urls: ['mercadozapatoca.com'] },
-        { id: 'nutresa', name: 'Nutresa en casa', enabled: true, urls: ['tiendanutresaencasa.com'] },
-        { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true, urls: ['mundohuevo.com'] },
-        { id: 'farmatodo', name: 'Farmatodo', enabled: true, urls: ['farmatodo.com.co'] },
-        { id: 'mercaldas', name: 'Mercaldas', enabled: true, urls: ['mercaldas.com'] },
-        { id: 'supermu', name: 'Super Mu', enabled: true, urls: ['supermu.com'] },
-        { id: 'rappi', name: 'Rappi', enabled: true, urls: ['rappi.com.co'] }
-    ]);
+  // Load initial store list from the centralized registry
+  const [stores, setStores] = useState<Store[]>(getDefaultStoreList());
 
-    const visibleStores = useMemo(() => {
-        // Con la refactorización nacional, ya no filtramos por ubicación
-        const allStores = getStoresByLocation(stores, 'national');
-        if (activeTab === 'name') return allStores; // All supported by Name
-        return allStores.filter(s => canSearchByEan(s.id)); // Only some support EAN
-    }, [stores, activeTab]);
+  /**
+   * Stores visible in the current UI tab.
+   * Filters stores by their capability (e.g., if Name mode, all are visible; if EAN, only EAN-capable ones).
+   */
+  const visibleStores = useMemo(() => {
+    // Centralized national coverage logic
+    const allStores = getStoresByLocation(stores, 'national');
 
+    // Mode-based capability filtering
+    if (activeTab === 'name') return allStores;
 
-    const manualStoreIds_hook = manualStoreIds;
-    const filteredStores = isRadar
-        ? visibleStores
-        : visibleStores.filter(s => !manualStoreIds_hook.includes(s.id));
+    // Filters out stores that don't support direct EAN search (e.g., D1, Makro)
+    return allStores.filter((s) => canSearchByEan(s.id));
+  }, [stores, activeTab]);
 
-    const handleStoreToggle = (storeId: string) => {
-        setStores(prev => prev.map(s =>
-            s.id === storeId ? { ...s, enabled: !s.enabled } : s
-        ));
-    };
+  /**
+   * Stores available for interaction (after applying specific exclusions).
+   */
+  const filteredStores = visibleStores; // Simplified as manualStoreIds is currently empty
 
-    const handleSelectAllStores = () => {
-        const allEnabled = filteredStores.every(s => s.enabled);
-        setStores(prev => prev.map(s => {
-            // Only affect stores visible in current tab
-            if (filteredStores.some(fs => fs.id === s.id)) {
-                return { ...s, enabled: !allEnabled };
-            }
-            return s;
-        }));
-    };
+  /**
+   * Toggles the 'enabled' state of a specific store.
+   */
+  const handleStoreToggle = (storeId: string) => {
+    setStores((prev) => prev.map((s) => (s.id === storeId ? { ...s, enabled: !s.enabled } : s)));
+  };
 
-    return {
-        stores: visibleStores,
-        filteredStores,
-        handleStoreToggle,
-        handleSelectAllStores,
-        enabledStoresCount: filteredStores.filter(s => s.enabled).length
-    };
+  /**
+   * Selects or deselects all currently visible stores.
+   */
+  const handleSelectAllStores = () => {
+    const allEnabled = filteredStores.every((s) => s.enabled);
+    setStores((prev) =>
+      prev.map((s) => {
+        // Only affect stores visible in the current view/tab
+        if (filteredStores.some((fs) => fs.id === s.id)) {
+          return { ...s, enabled: !allEnabled };
+        }
+        return s;
+      })
+    );
+  };
+
+  return {
+    stores: visibleStores,
+    filteredStores,
+    handleStoreToggle,
+    handleSelectAllStores,
+    enabledStoresCount: filteredStores.filter((s) => s.enabled).length,
+  };
 };
 
+export type { Store, AdvancedOptions };

@@ -1,4 +1,12 @@
-import { Instagram, Facebook, Twitter, Linkedin, ExternalLink, ShieldCheck, Heart } from "lucide-react";
+import {
+  Instagram,
+  Facebook,
+  Twitter,
+  Linkedin,
+  ExternalLink,
+  ShieldCheck,
+  Heart,
+} from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
@@ -20,19 +28,44 @@ const Footer = () => {
               />
             </div>
             <p className="text-sm leading-relaxed max-w-xs font-medium">
-              Plataforma avanzada de inteligencia de mercado y monitoreo de precios en tiempo real para el ecosistema de Retail en Colombia.
+              Plataforma avanzada de inteligencia de mercado y monitoreo de precios en tiempo real
+              para el ecosistema de Retail en Colombia.
             </p>
             <div className="flex gap-4 pt-4">
-              <a href="https://www.instagram.com/gruponutresa/" target="_blank" rel="noopener noreferrer" title="Instagram Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a
+                href="https://www.instagram.com/gruponutresa/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Instagram Nutresa"
+                className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300"
+              >
                 <Instagram className="w-4 h-4" />
               </a>
-              <a href="https://www.facebook.com/GrupoNutresa/" target="_blank" rel="noopener noreferrer" title="Facebook Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a
+                href="https://www.facebook.com/GrupoNutresa/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Facebook Nutresa"
+                className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300"
+              >
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="https://twitter.com/GrupoNutresa" target="_blank" rel="noopener noreferrer" title="Twitter Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a
+                href="https://twitter.com/GrupoNutresa"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Twitter Nutresa"
+                className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300"
+              >
                 <Twitter className="w-4 h-4" />
               </a>
-              <a href="https://www.linkedin.com/company/grupo-nutresa/" target="_blank" rel="noopener noreferrer" title="LinkedIn Nutresa" className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300">
+              <a
+                href="https://www.linkedin.com/company/grupo-nutresa/"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="LinkedIn Nutresa"
+                className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all duration-300"
+              >
                 <Linkedin className="w-4 h-4" />
               </a>
             </div>
@@ -40,16 +73,21 @@ const Footer = () => {
 
           {/* Navigation */}
           <div>
-            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.2em] mb-8">Navegación</h4>
+            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.2em] mb-8">
+              Navegación
+            </h4>
             <ul className="space-y-4">
               {[
                 { label: 'Radar Principal', path: '/' },
                 { label: 'Buscador de EAN', path: '/benchmark' },
                 { label: 'Módulo de Pareto', path: '/benchmark' },
-                { label: 'Radar Referencial', path: '/radar-referencial' }
+                { label: 'Radar Referencial', path: '/radar-referencial' },
               ].map((item) => (
                 <li key={item.label}>
-                  <a href={item.path} className="text-sm font-bold hover:text-emerald-500 transition-colors flex items-center gap-2 group">
+                  <a
+                    href={item.path}
+                    className="text-sm font-bold hover:text-emerald-500 transition-colors flex items-center gap-2 group"
+                  >
                     <span className="w-1.5 h-1.5 rounded-full bg-stone-700 group-hover:bg-emerald-500 transition-all"></span>
                     {item.label}
                   </a>
@@ -60,18 +98,26 @@ const Footer = () => {
 
           {/* Resources */}
           <div>
-            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.2em] mb-8">Soporte y Guía</h4>
+            <h4 className="text-white font-black uppercase text-[10px] tracking-[0.2em] mb-8">
+              Soporte y Guía
+            </h4>
             <ul className="space-y-4">
               {[
                 { label: 'Guía de Usuario', path: '/documentacion' },
                 { label: 'Centro de Soporte', path: '/contacto' },
                 { label: 'Reportar Fallo', path: '/contacto' },
-                { label: 'Web Nutresa', path: 'https://gruponutresa.com' }
+                { label: 'Web Nutresa', path: 'https://gruponutresa.com' },
               ].map((item) => (
                 <li key={item.label}>
-                  <a href={item.path} target={item.path.startsWith('http') ? '_blank' : '_self'} className="text-sm font-bold hover:text-emerald-500 transition-colors flex items-center gap-2">
+                  <a
+                    href={item.path}
+                    target={item.path.startsWith('http') ? '_blank' : '_self'}
+                    className="text-sm font-bold hover:text-emerald-500 transition-colors flex items-center gap-2"
+                  >
                     {item.label}
-                    {item.path.startsWith('http') && <ExternalLink className="w-3 h-3 opacity-50" />}
+                    {item.path.startsWith('http') && (
+                      <ExternalLink className="w-3 h-3 opacity-50" />
+                    )}
                   </a>
                 </li>
               ))}
@@ -88,11 +134,15 @@ const Footer = () => {
             <div className="space-y-4 relative z-10">
               <div className="flex justify-between items-center text-xs">
                 <span className="font-bold">Scraping Engine</span>
-                <span className="text-emerald-500 font-black tracking-widest uppercase text-[9px] bg-emerald-500/10 px-2 py-1 rounded-md">Online</span>
+                <span className="text-emerald-500 font-black tracking-widest uppercase text-[9px] bg-emerald-500/10 px-2 py-1 rounded-md">
+                  Online
+                </span>
               </div>
               <div className="flex justify-between items-center text-xs">
                 <span className="font-bold">Gemini AI Lab</span>
-                <span className="text-emerald-500 font-black tracking-widest uppercase text-[9px] bg-emerald-500/10 px-2 py-1 rounded-md">Active</span>
+                <span className="text-emerald-500 font-black tracking-widest uppercase text-[9px] bg-emerald-500/10 px-2 py-1 rounded-md">
+                  Active
+                </span>
               </div>
               <p className="text-[10px] text-stone-500 leading-tight pt-4 italic">
                 Monitoreo automático activo para 16+ tiendas retail en Colombia.

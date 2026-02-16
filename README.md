@@ -20,12 +20,14 @@ Plataforma avanzada de monitoreo de precios, scraping en tiempo real y análisis
 ## 📦 Instalación y Desarrollo
 
 1. **Clonar el repositorio**
+
    ```bash
    git clone <repo-url>
    cd 0017---RPA_Inteligencia_Precios_SN-master
    ```
 
 2. **Instalar dependencias**
+
    ```bash
    npm install
    ```
@@ -35,6 +37,7 @@ Plataforma avanzada de monitoreo de precios, scraping en tiempo real y análisis
    - `GEMINI_API_KEY`: Tu clave de Google AI Studio.
 
 4. **Ejecutar en desarrollo**
+
    ```bash
    npm run dev
    ```
@@ -52,4 +55,5 @@ Plataforma avanzada de monitoreo de precios, scraping en tiempo real y análisis
 - `/supabase/functions/gemini-chat`: Backend del asistente inteligente.
 
 ---
+
 © 2026 - Inteligencia de Datos - Grupo Nutresa

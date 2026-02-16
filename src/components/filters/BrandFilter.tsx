@@ -1,6 +1,6 @@
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Tag, CheckCircle2, Circle } from "lucide-react";
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Tag, CheckCircle2, Circle } from 'lucide-react';
 
 interface BrandFilterProps {
   brands: string[];
@@ -13,7 +13,7 @@ export const BrandFilter = ({
   brands,
   selectedBrands,
   onBrandToggle,
-  onToggleAll
+  onToggleAll,
 }: BrandFilterProps) => {
   const allSelected = selectedBrands.length === brands.length;
 
@@ -34,28 +34,34 @@ export const BrandFilter = ({
           onClick={onToggleAll}
           className="h-auto p-0 text-[10px] font-black text-emerald-600 hover:text-emerald-700 hover:bg-transparent transition-colors uppercase tracking-widest"
         >
-          {allSelected ? "Deseleccionar" : "Seleccionar todas"}
+          {allSelected ? 'Deseleccionar' : 'Seleccionar todas'}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 gap-2 overflow-y-auto max-h-[300px] pr-2 custom-scrollbar">
-        {brands.map(brand => {
+        {brands.map((brand) => {
           const isSelected = selectedBrands.includes(brand);
           return (
             <div
               key={brand}
               onClick={() => onBrandToggle(brand)}
-              className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-300 cursor-pointer group ${isSelected
+              className={`flex items-center justify-between px-4 py-3 rounded-xl border transition-all duration-300 cursor-pointer group ${
+                isSelected
                   ? 'bg-emerald-50 border-emerald-100 shadow-sm'
                   : 'bg-white border-stone-100 hover:border-stone-200'
-                }`}
+              }`}
             >
-              <span className={`text-[11px] font-black uppercase tracking-tight transition-colors ${isSelected ? 'text-emerald-700' : 'text-stone-500 group-hover:text-stone-700'
-                }`}>
+              <span
+                className={`text-[11px] font-black uppercase tracking-tight transition-colors ${
+                  isSelected ? 'text-emerald-700' : 'text-stone-500 group-hover:text-stone-700'
+                }`}
+              >
                 {brand}
               </span>
 
-              <div className={`transition-all duration-300 ${isSelected ? 'scale-110' : 'scale-100 opacity-20 group-hover:opacity-40'}`}>
+              <div
+                className={`transition-all duration-300 ${isSelected ? 'scale-110' : 'scale-100 opacity-20 group-hover:opacity-40'}`}
+              >
                 {isSelected ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 fill-emerald-50" />
                 ) : (

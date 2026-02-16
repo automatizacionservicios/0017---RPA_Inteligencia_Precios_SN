@@ -9,20 +9,21 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
 
 ## 🏗️ Resumen de Métodos
 
-| Método | Motor | Descripción |
-|--------|-------|-------------|
-| **VTEX** | Fetch API (JSON) | Consulta directa a la API de búsqueda de VTEX. |
-| **VTEX-IO** | Fetch API (GraphQL) | Consulta a la nueva infraestructura de VTEX IO. |
-| **Cheerio** | Cheerio (HTML) | Scraping de HTML estático. |
-| **Instaleap** | Fetch API (JSON) | Integración con la API de Moira/Instaleap (D1, Makro). |
-| **Algolia** | Fetch API (JSON) | Consulta a índices de Algolia (Farmatodo). |
-| **Rappi** | Fetch API (JSON) | Extracción de datos de la plataforma Rappi. |
+| Método        | Motor               | Descripción                                            |
+| ------------- | ------------------- | ------------------------------------------------------ |
+| **VTEX**      | Fetch API (JSON)    | Consulta directa a la API de búsqueda de VTEX.         |
+| **VTEX-IO**   | Fetch API (GraphQL) | Consulta a la nueva infraestructura de VTEX IO.        |
+| **Cheerio**   | Cheerio (HTML)      | Scraping de HTML estático.                             |
+| **Instaleap** | Fetch API (JSON)    | Integración con la API de Moira/Instaleap (D1, Makro). |
+| **Algolia**   | Fetch API (JSON)    | Consulta a índices de Algolia (Farmatodo).             |
+| **Rappi**     | Fetch API (JSON)    | Extracción de datos de la plataforma Rappi.            |
 
 ---
 
 ## 📦 Tiendas Cheerio (HTML Scraping)
 
 ### Zapatoca
+
 - **URL**: `https://www.mercadozapatoca.com/search/?k={query}`
 - **Selectores**:
   - **Tarjeta**: `#categorias .dpr_container`
@@ -33,6 +34,7 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
   - **Imagen**: `.dpr_imagen_thumb img`
 
 ### Carulla
+
 - **URL**: `https://www.carulla.com/s?q={query}`
 - **Nota**: Se utiliza Cheerio para evadir bloqueos en la API de VTEX IO.
 - **Selectores**:
@@ -44,6 +46,7 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
   - **Imagen**: `img`
 
 ### La Vaquita
+
 - **URL**: `https://vaquitaexpress.com.co/catalogsearch/result/?q={query}`
 - **Selectores**:
   - **Tarjeta**: `.product-item`
@@ -53,6 +56,7 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
   - **Imagen**: `.product-image-photo`
 
 ### Mundo Huevo
+
 - **URL**: `https://mundohuevo.com/search?q={query}`
 - **Selectores**:
   - **Tarjeta**: `.col-12.nt_pr__`
@@ -62,6 +66,7 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
   - **Imagen**: `.product-image img`
 
 ### Super Mu
+
 - **URL**: `https://supermu.com/search?q={query}`
 - **Selectores**:
   - **Tarjeta**: `.product-collection`
@@ -75,6 +80,7 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
 ## ⚡ Tiendas de API Directa
 
 ### VTEX (Legacy & IO)
+
 - **Tiendas**: Éxito, Jumbo, Olímpica, Euro, Megatiendas, Mercacentro, Mercaldas, Nutresa.
 - **Endpoint**: `https://{domain}/api/catalog_system/pub/products/search/?ft={query}`
 - **Campos Clave**:
@@ -83,15 +89,18 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
   - `items[0].images[0].imageUrl`
 
 ### Instaleap (Moira Engine)
+
 - **Tiendas**: Tiendas D1, Makro.
 - **Dominios**: `domicilios.tiendasd1.com`, `tienda.makro.com.co`
 - **Método**: Consumo de API REST interna de Instaleap.
 
 ### Algolia
+
 - **Tiendas**: Farmatodo.
 - **Método**: Búsqueda indexada vía Algolia API.
 
 ### Rappi
+
 - **Tiendas**: Rappi.
 - **Método**: Extracción de datos vía `__NEXT_DATA__` y API de productos.
 
@@ -100,12 +109,15 @@ Documentación técnica de los métodos de recolección y selectores utilizados 
 ## 🛠️ Mantenimiento
 
 ### Detección de Cambios
+
 Si una tienda Cheerio falla (0 resultados):
+
 1. Verificar si el selector de **Tarjeta** (`productCard`) sigue existiendo en el HTML.
 2. Comprobar si los selectores de **Precio** han cambiado sus clases dinámicas (común en Carulla).
 3. Asegurar que los headers en `utils.ts` estén enviando un User-Agent actualizado.
 
 ### Agregar Nueva Tienda
+
 1. Definir el `scrapeMethod` en `StrategyFactory.ts`.
 2. Si es Cheerio, añadir los selectores CSS correspondientes.
 3. Actualizar este documento con la nueva configuración.

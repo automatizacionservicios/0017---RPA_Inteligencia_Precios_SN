@@ -1,6 +1,6 @@
-import { TrendingUp, BarChart3 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { TrendingUp, BarChart3 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -11,7 +11,6 @@ const Hero = () => {
 
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
-
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-accent/20 border border-accent/30 mx-auto">
             <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
             <span className="text-sm font-medium text-accent-foreground">
@@ -26,7 +25,8 @@ const Hero = () => {
             </h2>
 
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              Monitoreo y comparación de precios en tiempo real para la toma de decisiones estratégicas.
+              Monitoreo y comparación de precios en tiempo real para la toma de decisiones
+              estratégicas.
             </p>
           </div>
 
@@ -60,7 +60,6 @@ const Hero = () => {
               </div>
             </div>
           </div>
-
         </div>
       </div>
     </section>

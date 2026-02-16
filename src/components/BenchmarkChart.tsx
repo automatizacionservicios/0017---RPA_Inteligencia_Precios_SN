@@ -1,11 +1,34 @@
-import { useState, useRef, useLayoutEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, PieChart, Pie, Legend } from "recharts";
-import { ChevronDown, ChevronUp, BarChart3, TrendingDown, Store, PieChart as PieChartIcon, Info, Target, Award, Zap } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import type { MarketProduct } from "@/types/benchmark";
-import { getStoreBrand } from "@/lib/store-branding";
+import { useState, useRef, useLayoutEffect } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+  PieChart,
+  Pie,
+  Legend,
+} from 'recharts';
+import {
+  ChevronDown,
+  ChevronUp,
+  BarChart3,
+  TrendingDown,
+  Store,
+  PieChart as PieChartIcon,
+  Info,
+  Target,
+  Award,
+  Zap,
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { MarketProduct } from '@/types/benchmark';
+import { getStoreBrand } from '@/lib/store-branding';
 
 interface BenchmarkChartProps {
   products: MarketProduct[];
@@ -19,7 +42,11 @@ const CustomTooltip = ({ active, payload }: any) => {
         <div className="flex items-center gap-3 mb-4">
           <div className="w-10 h-10 rounded-full border border-stone-100 flex items-center justify-center bg-white p-1.5 shadow-sm">
             {getStoreBrand(data.store).icon ? (
-              <img src={getStoreBrand(data.store).icon!} alt={data.store} className="w-full h-full object-contain" />
+              <img
+                src={getStoreBrand(data.store).icon!}
+                alt={data.store}
+                className="w-full h-full object-contain"
+              />
             ) : (
               <Store className="w-5 h-5 text-stone-300" />
             )}
@@ -58,14 +85,14 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'details'>('overview');
   const chartRef = useRef<HTMLDivElement>(null);
 
-  const activeProducts = products.filter(p => p.price > 0);
+  const activeProducts = products.filter((p) => p.price > 0);
   if (activeProducts.length === 0) return null;
 
   // --- PROCESAMIENTO ESTRATÉGICO DE DATOS ---
 
   // 1. Agrupar por producto (EAN o Nombre) para determinar ganadores
   const productGroups: Record<string, MarketProduct[]> = {};
-  activeProducts.forEach(p => {
+  activeProducts.forEach((p) => {
     const key = p.ean || p.productName;
     if (!productGroups[key]) productGroups[key] = [];
     productGroups[key].push(p);
@@ -75,15 +102,15 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const storeWins: Record<string, number> = {};
   let totalMarketOpportunity = 0;
 
-  Object.values(productGroups).forEach(group => {
-    const prices = group.map(p => p.price);
+  Object.values(productGroups).forEach((group) => {
+    const prices = group.map((p) => p.price);
     const minPriceGroup = Math.min(...prices);
     const maxPriceGroup = Math.max(...prices);
 
     // Oportunidad = Brecha entre el más caro y el más barato hallado
-    totalMarketOpportunity += (maxPriceGroup - minPriceGroup);
+    totalMarketOpportunity += maxPriceGroup - minPriceGroup;
 
-    group.forEach(p => {
+    group.forEach((p) => {
       if (p.price === minPriceGroup) {
         storeWins[p.store] = (storeWins[p.store] || 0) + 1;
       }
@@ -98,15 +125,17 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
   const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
   // 4. Preparar datos para Gráfica Detallada (Bar Chart)
-  const minPrice = Math.min(...activeProducts.map(p => p.price));
-  const chartData = activeProducts.map((product, index) => ({
-    id: `${product.store}-${index}`,
-    store: product.store,
-    fullName: product.productName,
-    name: `${product.store} • ${product.productName.substring(0, 20)}${product.productName.length > 20 ? '...' : ''}`,
-    precio: product.price,
-    presentation: product.presentation
-  })).sort((a, b) => a.precio - b.precio);
+  const minPrice = Math.min(...activeProducts.map((p) => p.price));
+  const chartData = activeProducts
+    .map((product, index) => ({
+      id: `${product.store}-${index}`,
+      store: product.store,
+      fullName: product.productName,
+      name: `${product.store} • ${product.productName.substring(0, 20)}${product.productName.length > 20 ? '...' : ''}`,
+      precio: product.price,
+      presentation: product.presentation,
+    }))
+    .sort((a, b) => a.precio - b.precio);
 
   // 5. Determinar Líder de Mercado
   const marketLeader = pieData.length > 0 ? pieData[0].name : 'N/A';
@@ -145,7 +174,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 setActiveTab('overview');
                 setIsExpanded(true);
               }}
-              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'overview' && isExpanded ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 opacity-60'
+              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'overview' && isExpanded
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-stone-400 opacity-60'
                 }`}
             >
               <PieChartIcon className="w-3.5 h-3.5" />
@@ -158,7 +189,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 setActiveTab('details');
                 setIsExpanded(true);
               }}
-              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'details' && isExpanded ? 'bg-white text-emerald-600 shadow-sm' : 'text-stone-400 opacity-60'
+              className={`h-9 px-4 rounded-xl font-black text-[10px] uppercase tracking-widest gap-2 transition-all ${activeTab === 'details' && isExpanded
+                  ? 'bg-white text-emerald-600 shadow-sm'
+                  : 'text-stone-400 opacity-60'
                 }`}
             >
               <BarChart3 className="w-3.5 h-3.5" />
@@ -181,7 +214,7 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
         {isExpanded && (
           <motion.div
             initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
+            animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
           >
@@ -219,7 +252,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                                 return (
                                   <div className="bg-white p-3 rounded-2xl shadow-xl border border-stone-100 font-black uppercase text-[10px]">
                                     <p className="text-stone-800 mb-1">{payload[0].name}</p>
-                                    <p className="text-emerald-600">{payload[0].value} Premios Optimal</p>
+                                    <p className="text-emerald-600">
+                                      {payload[0].value} Premios Optimal
+                                    </p>
                                   </div>
                                 );
                               }
@@ -230,8 +265,12 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                       </ResponsiveContainer>
                       {/* Center Label */}
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <span className="text-2xl font-black text-stone-800">{pieData[0]?.value || 0}</span>
-                        <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest italic">Victorias</span>
+                        <span className="text-2xl font-black text-stone-800">
+                          {pieData[0]?.value || 0}
+                        </span>
+                        <span className="text-[9px] font-bold text-stone-400 uppercase tracking-widest italic">
+                          Victorias
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -245,19 +284,32 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                       </h4>
                     </div>
                     {pieData.slice(0, 4).map((item, idx) => (
-                      <div key={item.name} className="flex items-center justify-between p-4 rounded-2xl bg-stone-50 border border-stone-100 group/item hover:bg-white hover:border-emerald-500/20 hover:shadow-md transition-all">
+                      <div
+                        key={item.name}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-stone-50 border border-stone-100 group/item hover:bg-white hover:border-emerald-500/20 hover:shadow-md transition-all"
+                      >
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center p-1.5 bg-white`}>
+                          <div
+                            className={`w-8 h-8 rounded-full border border-stone-200 flex items-center justify-center p-1.5 bg-white`}
+                          >
                             {getStoreBrand(item.name).icon ? (
-                              <img src={getStoreBrand(item.name).icon!} alt="" className="w-full h-full object-contain" />
+                              <img
+                                src={getStoreBrand(item.name).icon!}
+                                alt=""
+                                className="w-full h-full object-contain"
+                              />
                             ) : (
                               <Store className="w-4 h-4 text-stone-300" />
                             )}
                           </div>
-                          <span className="text-xs font-black text-stone-700 uppercase tracking-tight">{item.name}</span>
+                          <span className="text-xs font-black text-stone-700 uppercase tracking-tight">
+                            {item.name}
+                          </span>
                         </div>
                         <div className="flex items-center gap-3">
-                          <span className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${idx === 0 ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'}`}>
+                          <span
+                            className={`text-[10px] font-black px-2.5 py-1 rounded-lg ${idx === 0 ? 'bg-emerald-500 text-white' : 'bg-stone-200 text-stone-500'}`}
+                          >
                             {item.value} WINS
                           </span>
                           <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest w-10 text-right">
@@ -272,11 +324,7 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                 <div className="h-[400px] w-full mt-4 overflow-y-auto custom-scrollbar pr-4">
                   <div className="min-h-[400px]" ref={chartRef}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={chartData}
-                        layout="vertical"
-                        margin={{ left: 40, right: 40 }}
-                      >
+                      <BarChart data={chartData} layout="vertical" margin={{ left: 40, right: 40 }}>
                         <CartesianGrid horizontal={false} strokeDasharray="4 4" stroke="#f1f1f1" />
                         <XAxis type="number" hide />
                         <YAxis
@@ -286,7 +334,7 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                           width={160}
                           axisLine={false}
                           tickLine={false}
-                          style={{ pointerEvents: 'none' }}
+                          className="pointer-events-none"
                         />
                         <Tooltip
                           content={<CustomTooltip />}
@@ -319,7 +367,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                     <Award className="w-6 h-6 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-emerald-800/60 uppercase tracking-widest leading-none mb-1.5">Líder de Valor</p>
+                    <p className="text-[9px] font-black text-emerald-800/60 uppercase tracking-widest leading-none mb-1.5">
+                      Líder de Valor
+                    </p>
                     <p className="font-black text-stone-800 uppercase tracking-tight text-sm">
                       {marketLeader}
                     </p>
@@ -331,7 +381,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                     <TrendingDown className="w-6 h-6 text-amber-500" />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-amber-800/60 uppercase tracking-widest leading-none mb-1.5">Mejor Precio Hallado</p>
+                    <p className="text-[9px] font-black text-amber-800/60 uppercase tracking-widest leading-none mb-1.5">
+                      Mejor Precio Hallado
+                    </p>
                     <p className="font-black text-stone-800 uppercase tracking-tight text-sm">
                       ${minPrice.toLocaleString('es-CO')}
                     </p>
@@ -343,7 +395,9 @@ const BenchmarkChart = ({ products }: BenchmarkChartProps) => {
                     <Zap className="w-6 h-6 text-emerald-500" />
                   </div>
                   <div>
-                    <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1.5">Oportunidad de Ahorro</p>
+                    <p className="text-[9px] font-black text-stone-400 uppercase tracking-widest leading-none mb-1.5">
+                      Oportunidad de Ahorro
+                    </p>
                     <p className="font-black text-stone-800 uppercase tracking-tight text-sm">
                       ${totalMarketOpportunity.toLocaleString('es-CO')}
                     </p>

@@ -1,43 +1,35 @@
-import { useState, useMemo } from "react";
-import { getStoresByLocation } from "@/lib/store-coverage";
+import { useState, useMemo } from 'react';
+import { getStoresByLocation } from '@/lib/store-coverage';
+import { Store } from '@/types/store';
+import { getDefaultStoreList } from '@/lib/store-registry';
 
-export interface Store {
-    id: string;
-    name: string;
-    enabled: boolean;
-}
+/**
+ * Hook to manage stores specifically for the Pareto/Audit module.
+ * Standardizes coverage to 'national' for consistent data fetching.
+ *
+ * @param locationId - Legacy param, currently defaults to 'national' for unified search.
+ */
+export const useParetoStores = (locationId: string = 'national') => {
+  // Single source of truth for stores
+  const [stores, setStores] = useState<Store[]>(getDefaultStoreList());
 
-export const useParetoStores = (locationId: string = 'bogota') => {
-    const [stores, setStores] = useState<Store[]>([
-        { id: 'jumbo', name: 'Jumbo', enabled: true },
-        { id: 'olimpica', name: 'Olímpica', enabled: true },
-        { id: 'exito', name: 'Éxito', enabled: true },
-        { id: 'euro', name: 'Euro Supermercados', enabled: true },
-        { id: 'vaquita', name: 'Vaquita Express', enabled: true },
-        { id: 'megatiendas', name: 'Megatiendas', enabled: true },
-        { id: 'mercacentro', name: 'Mercacentro', enabled: true },
-        { id: 'zapatoca', name: 'Mercados Zapatoca', enabled: true },
-        { id: 'nutresa', name: 'Nutresa en casa', enabled: true },
-        { id: 'mundohuevo', name: 'Mundo Huevo', enabled: true },
-        { id: 'farmatodo', name: 'Farmatodo', enabled: true },
-        { id: 'mercaldas', name: 'Mercaldas', enabled: true },
-        { id: 'supermu', name: 'Super Mu', enabled: true }
-    ]);
+  const filteredStores = useMemo(() => {
+    // Exclude stores requested by the user for Pareto (Massive Load)
+    const restrictedIds = ['rappi', 'carulla', 'd1', 'makro'];
+    const list = stores.filter((s) => !restrictedIds.includes(s.id));
 
-    const filteredStores = useMemo(() => {
-        return getStoresByLocation(stores, locationId);
-    }, [stores, locationId]);
+    // All stores are considered national under the current architecture
+    return getStoresByLocation(list, locationId);
+  }, [stores, locationId]);
 
-    const handleStoreToggle = (storeId: string) => {
-        setStores(prev => prev.map(s =>
-            s.id === storeId ? { ...s, enabled: !s.enabled } : s
-        ));
-    };
+  const handleStoreToggle = (storeId: string) => {
+    setStores((prev) => prev.map((s) => (s.id === storeId ? { ...s, enabled: !s.enabled } : s)));
+  };
 
-    return {
-        stores: filteredStores,
-        setStores,
-        handleStoreToggle,
-        enabledStoresCount: filteredStores.filter(s => s.enabled).length
-    };
+  return {
+    stores: filteredStores,
+    setStores,
+    handleStoreToggle,
+    enabledStoresCount: filteredStores.filter((s) => s.enabled).length,
+  };
 };

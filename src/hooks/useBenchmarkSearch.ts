@@ -1,149 +1,189 @@
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
-import { Store, AdvancedOptions } from "./useStoreManagement";
+import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
+import { Store, AdvancedOptions } from '@/hooks/useStoreManagement';
 
 interface UseBenchmarkSearchProps {
-    initialSearch?: string | null;
-    isEanMode?: boolean;
-    isLoading: boolean;
-    stores: Store[];
-    advancedOptions: AdvancedOptions;
-    onSearch: (
-        searchMode: 'product' | 'store-catalog',
-        productName: string,
-        productType: string,
-        presentation: string,
-        selectedStores: Store[],
-        advancedOptions: AdvancedOptions,
-        storeId?: string,
-        keywords?: string[],
-        ean?: string,
-        brand?: string,
-        category?: string,
-        productLimit?: number
-    ) => void;
-    activeTab: string;
-    setActiveTab: (tab: string) => void;
+  /** Initial search query (from URL or navigation) */
+  initialSearch?: string | null;
+  /** Current search mode (EAN vs Name) */
+  isEanMode?: boolean;
+  /** Global loading state */
+  isLoading: boolean;
+  /** Current list of stores with their enabled state */
+  stores: Store[];
+  /** Search configuration (freshness, deep research) */
+  advancedOptions: AdvancedOptions;
+  /** Main search callback to the parent component */
+  onSearch: (
+    searchMode: 'product' | 'store-catalog',
+    productName: string,
+    productType: string,
+    presentation: string,
+    selectedStores: Store[],
+    advancedOptions: AdvancedOptions,
+    storeId?: string,
+    keywords?: string[],
+    ean?: string,
+    brand?: string,
+    category?: string,
+    productLimit?: number
+  ) => void | Promise<void>;
+  /** Current active UI tab */
+  activeTab: string;
+  /** Setter for the active UI tab */
+  setActiveTab: (tab: string) => void;
+  /** If true, triggers handleProductSearch on mount if initialSearch exists */
+  autoTrigger?: boolean;
 }
 
+/**
+ * Hook to manage state and search execution for the Benchmark module.
+ * Standardizes the payload for the edge function.
+ */
 export const useBenchmarkSearch = ({
-    initialSearch,
-    isEanMode,
-    isLoading,
-    stores,
-    advancedOptions,
-    onSearch,
-    activeTab,
-    setActiveTab
+  initialSearch,
+  isEanMode,
+  isLoading,
+  stores,
+  advancedOptions,
+  onSearch,
+  activeTab,
+  setActiveTab,
+  autoTrigger,
 }: UseBenchmarkSearchProps) => {
-    const [productName, setProductName] = useState("");
-    const [brandName, setBrandName] = useState("");
-    const [categoryName, setCategoryName] = useState("");
-    const [eanCode, setEanCode] = useState("");
-    const [keywords, setKeywords] = useState("");
-    const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState("");
-    const [catalogCategory, setCatalogCategory] = useState("");
-    const [catalogLimit, setCatalogLimit] = useState(20);
+  // Search Criteria State
+  const [productName, setProductName] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [categoryName, setCategoryName] = useState('');
+  const [eanCode, setEanCode] = useState('');
+  const [keywords, setKeywords] = useState('');
 
+  // Store Catalog Mode State
+  const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState('');
+  const [catalogCategory, setCatalogCategory] = useState('all');
+  const [catalogLimit, setCatalogLimit] = useState(50);
 
-    useEffect(() => {
-        if (initialSearch) {
-            if (isEanMode) {
-                setEanCode(initialSearch);
-                setActiveTab("ean");
-            } else {
-                setProductName(initialSearch);
-                setActiveTab("name");
-            }
+  /**
+   * Effect to handle initial search query from URL or navigation.
+   */
+  useEffect(() => {
+    if (initialSearch) {
+      // EAN search usually starts with 770
+      if (initialSearch.match(/^\d{8,14}$/)) {
+        setEanCode(initialSearch);
+        setActiveTab('ean');
+      } else {
+        setProductName(initialSearch);
+        setActiveTab('name');
+      }
+    }
+  }, [initialSearch, setActiveTab]);
 
-            if (!isLoading) {
-                const timer = setTimeout(() => {
-                    const enabledStores = stores.filter(s => s.enabled);
-                    const allEnabledStores = [...enabledStores];
+  /**
+   * Executes a Product Search (Name or EAN mode).
+   */
+  const handleProductSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-                    onSearch(
-                        'product',
-                        isEanMode ? "" : initialSearch,
-                        "",
-                        "",
-                        allEnabledStores,
-                        advancedOptions,
-                        undefined,
-                        [],
-                        isEanMode ? initialSearch : undefined,
-                        undefined,
-                        undefined,
-                        undefined
-                    );
-                }, 300);
-                return () => clearTimeout(timer);
-            }
-        }
-    }, [initialSearch, isEanMode]);
+    // Validation: Search term or EAN required
+    if (activeTab === 'name' && !productName.trim()) {
+      toast.error('Por favor ingresa un nombre de producto');
+      return;
+    }
+    if (activeTab === 'ean' && !eanCode.trim()) {
+      toast.error('Por favor ingresa un código EAN');
+      return;
+    }
 
-    const handleProductSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!productName.trim() && !eanCode.trim()) {
-            toast.error("Por favor ingresa el nombre del producto o un EAN");
-            return;
-        }
-        const allStores = [...stores];
-        const selectedStores = allStores.filter(store => store.enabled);
-        if (selectedStores.length === 0) {
-            toast.error("Por favor selecciona al menos una tienda");
-            return;
-        }
-        const keywordsList = keywords.split(',').map(k => k.trim()).filter(k => k.length > 0);
-        onSearch(
-            'product',
-            productName.trim(),
-            "",
-            "",
-            selectedStores,
-            advancedOptions,
-            undefined,
-            keywordsList,
-            eanCode.trim() || undefined,
-            brandName.trim() || undefined,
-            categoryName.trim() || undefined,
-            undefined
-        );
-    };
+    const selectedStoresList = stores.filter((s) => s.enabled);
+    if (selectedStoresList.length === 0) {
+      toast.error('Selecciona al menos una tienda');
+      return;
+    }
 
-    const handleCatalogSearch = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!selectedStoreForCatalog) {
-            toast.error("Por favor selecciona una tienda");
-            return;
-        }
-        onSearch(
-            'store-catalog',
-            '',
-            '',
-            '',
-            [],
-            advancedOptions,
-            selectedStoreForCatalog,
-            catalogCategory.trim() ? [catalogCategory.trim()] : [],
-            eanCode.trim() || undefined,
-            brandName.trim() || undefined,
-            catalogCategory.trim() || undefined,
-            catalogLimit
-        );
-    };
+    const keywordsList = keywords
+      .split(',')
+      .map((k) => k.trim())
+      .filter((k) => k.length > 0);
 
+    onSearch(
+      'product',
+      productName,
+      'all', // productType (legacy)
+      'all', // presentation (legacy)
+      selectedStoresList,
+      advancedOptions,
+      undefined, // storeId (not needed for general search)
+      keywordsList,
+      activeTab === 'ean' ? eanCode : undefined,
+      brandName || undefined,
+      categoryName || undefined
+    );
+  };
 
-    return {
-        productName, setProductName,
-        brandName, setBrandName,
-        categoryName, setCategoryName,
-        eanCode, setEanCode,
-        keywords, setKeywords,
-        selectedStoreForCatalog, setSelectedStoreForCatalog,
-        catalogCategory, setCatalogCategory,
-        catalogLimit, setCatalogLimit,
-        activeTab, setActiveTab,
-        handleProductSearch,
-        handleCatalogSearch
-    };
+  /**
+   * Executes a Store Catalog extraction.
+   */
+  const handleCatalogSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStoreForCatalog) {
+      toast.error('Selecciona una tienda');
+      return;
+    }
+
+    const store = stores.find((s) => s.id === selectedStoreForCatalog);
+    if (!store) return;
+
+    onSearch(
+      'store-catalog',
+      '', // productName (not needed for catalog)
+      'all',
+      'all',
+      [store],
+      advancedOptions,
+      selectedStoreForCatalog,
+      [], // keywords (not needed for catalog)
+      undefined, // ean
+      undefined, // brand
+      catalogCategory === 'all' ? undefined : catalogCategory,
+      catalogLimit
+    );
+  };
+
+  /**
+   * Effect to handle automatic search trigger from external navigation (e.g. Home Search)
+   */
+  useEffect(() => {
+    if (autoTrigger && initialSearch && stores.length > 0 && !isLoading) {
+      // Small timeout to allow state synchronization
+      const timer = setTimeout(() => {
+        const fakeEvent = { preventDefault: () => { } } as React.FormEvent;
+        handleProductSearch(fakeEvent);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+    // We only want this to run once on mount when autoTrigger is true
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoTrigger, initialSearch, stores.length > 0]);
+
+  return {
+    productName,
+    setProductName,
+    brandName,
+    setBrandName,
+    categoryName,
+    setCategoryName,
+    eanCode,
+    setEanCode,
+    keywords,
+    setKeywords,
+    selectedStoreForCatalog,
+    setSelectedStoreForCatalog,
+    catalogCategory,
+    setCatalogCategory,
+    catalogLimit,
+    setCatalogLimit,
+    handleProductSearch,
+    handleCatalogSearch,
+  };
 };
