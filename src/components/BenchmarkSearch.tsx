@@ -388,9 +388,7 @@ const BenchmarkSearch = ({
                             }}
                           />
                           <div className="switch-bg relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors bg-stone-200">
-                            <span
-                              className="pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-0"
-                            />
+                            <span className="pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-0" />
                           </div>
                         </div>
                       </label>
@@ -407,7 +405,9 @@ const BenchmarkSearch = ({
                             checked={exactMatch}
                             onChange={() => setExactMatch(!exactMatch)}
                           />
-                          <div className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}>
+                          <div
+                            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}
+                          >
                             <span
                               className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
                             />

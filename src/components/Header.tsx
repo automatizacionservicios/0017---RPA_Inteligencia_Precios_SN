@@ -8,7 +8,6 @@ import {
   Sparkles,
   MessageSquare,
   PackageCheck,
-  MapPin,
   Menu,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -76,10 +75,11 @@ const Header = () => {
   return (
     <>
       <header
-        className={`sticky top-0 z-50 w-full transition-all duration-700 ${isHomePage
-          ? 'bg-stone-900/60 border-b border-white/5 backdrop-blur-2xl'
-          : 'bg-white/90 border-b border-stone-200 backdrop-blur-xl'
-          }`}
+        className={`sticky top-0 z-50 w-full transition-all duration-700 ${
+          isHomePage
+            ? 'bg-stone-900/60 border-b border-white/5 backdrop-blur-2xl'
+            : 'bg-white/90 border-b border-stone-200 backdrop-blur-xl'
+        }`}
       >
         {/* Subtle top glow line */}
         <div
@@ -120,10 +120,11 @@ const Header = () => {
               {/* Premium Search Trigger (Spotlight Style) */}
               <button
                 onClick={() => setOpen(true)}
-                className={`hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-2xl border transition-all duration-300 group ${isHomePage
-                  ? 'bg-white/5 border-white/10 text-stone-400 hover:bg-white/10 hover:border-white/20'
-                  : 'bg-stone-50 border-stone-100 text-stone-500 hover:bg-white hover:shadow-md'
-                  }`}
+                className={`hidden lg:flex items-center gap-3 px-5 py-2.5 rounded-2xl border transition-all duration-300 group ${
+                  isHomePage
+                    ? 'bg-white/5 border-white/10 text-stone-400 hover:bg-white/10 hover:border-white/20'
+                    : 'bg-stone-50 border-stone-100 text-stone-500 hover:bg-white hover:shadow-md'
+                }`}
               >
                 <Search className="w-4 h-4 transition-transform group-hover:scale-110" />
                 <span className="text-[10px] font-black uppercase tracking-widest pr-4">
@@ -150,10 +151,11 @@ const Header = () => {
               <div className="flex items-center gap-6">
                 {/* Live Status - Premium Redesign */}
                 <div
-                  className={`hidden md:flex items-center gap-3 px-4 py-2.5 rounded-full border backdrop-blur-sm transition-all duration-700 ${isHomePage
-                    ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]'
-                    : 'bg-white border-stone-100 shadow-sm'
-                    }`}
+                  className={`hidden md:flex items-center gap-3 px-4 py-2.5 rounded-full border backdrop-blur-sm transition-all duration-700 ${
+                    isHomePage
+                      ? 'bg-emerald-500/5 border-emerald-500/20 shadow-[0_0_20px_-5px_rgba(16,185,129,0.3)]'
+                      : 'bg-white border-stone-100 shadow-sm'
+                  }`}
                 >
                   <div className="relative">
                     <div className="w-3 h-3 rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)] animate-pulse"></div>
@@ -165,7 +167,6 @@ const Header = () => {
                     Monitor <span className="italic">Live</span>
                   </span>
                 </div>
-
 
                 <nav className="flex items-center gap-4">
                   <div className="flex items-center gap-2 border-r border-stone-200/20 pr-4 mr-1">
@@ -188,10 +189,11 @@ const Header = () => {
                   <div className="flex items-center gap-2">
                     <Button
                       variant="ghost"
-                      className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all duration-500 gap-2 border border-transparent hover:scale-105 ${isHomePage
-                        ? 'text-white hover:bg-white/10 hover:border-white/10'
-                        : 'text-stone-600 hover:bg-stone-50 hover:border-stone-100'
-                        }`}
+                      className={`px-3 py-1.5 rounded-xl font-black text-[9px] uppercase tracking-widest transition-all duration-500 gap-2 border border-transparent hover:scale-105 ${
+                        isHomePage
+                          ? 'text-white hover:bg-white/10 hover:border-white/10'
+                          : 'text-stone-600 hover:bg-stone-50 hover:border-stone-100'
+                      }`}
                       onClick={() => navigate('/radar-referencial')}
                     >
                       <Search className="w-3 h-3" />
@@ -224,10 +226,10 @@ const Header = () => {
             </div>
           </div>
         </div>
-      </header >
+      </header>
 
       {/* Global Command Center (Spotlight Search) */}
-      < CommandDialog open={open} onOpenChange={setOpen} >
+      <CommandDialog open={open} onOpenChange={setOpen}>
         <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border-none">
           <CommandInput
             placeholder="¿Qué necesitas buscar?"
@@ -280,7 +282,7 @@ const Header = () => {
             ))}
           </CommandList>
         </div>
-      </CommandDialog >
+      </CommandDialog>
     </>
   );
 };

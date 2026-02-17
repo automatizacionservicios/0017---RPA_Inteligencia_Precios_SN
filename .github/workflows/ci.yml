@@ -37,7 +37,7 @@ jobs:
         run: npm run lint
 
       - name: Security - Audit
-        run: npm run audit -- --audit-level=high || true 
+        run: npm run audit -- --audit-level=high || true
 
       - name: Testing - Unit & Coverage
         run: npm run test:coverage

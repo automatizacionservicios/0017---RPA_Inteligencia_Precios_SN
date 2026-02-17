@@ -77,7 +77,7 @@ serve(async (req: Request) => {
     const globalTimeout = isRadar ? 52000 : 30000;
 
     // Para EAN, permitimos que cada tienda use casi todo el tiempo global
-    const effectiveTimeout = isEanSearch ? (globalTimeout - 2000) : DEFAULT_STORE_TIMEOUT;
+    const effectiveTimeout = isEanSearch ? globalTimeout - 2000 : DEFAULT_STORE_TIMEOUT;
 
     const searchPromises = storesToQuery.map(async (store) => {
       const strategy = StrategyFactory.getStrategy(store.id, limit);
@@ -95,7 +95,9 @@ serve(async (req: Request) => {
         return storeResults;
       } catch (e: any) {
         if (e.message === 'STORE_TIMEOUT') {
-          console.warn(`[Tienda] ${store.id} agotó el tiempo de espera (Timeout ${effectiveTimeout / 1000}s)`);
+          console.warn(
+            `[Tienda] ${store.id} agotó el tiempo de espera (Timeout ${effectiveTimeout / 1000}s)`
+          );
         } else {
           console.error(`[Tienda] ${store.id}: ...  ERROR: ${e}`);
         }
