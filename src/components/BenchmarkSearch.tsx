@@ -34,7 +34,6 @@ interface BenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string,
     exactMatch?: boolean
   ) => void | Promise<void>;
   /** Estado de carga global */
@@ -49,10 +48,6 @@ interface BenchmarkSearchProps {
   isRadar?: boolean;
   /** If true, triggers the search automatically when initialSearch is provided */
   autoTrigger?: boolean;
-  /** Location ID for filtered search */
-  locationId?: string;
-  /** Callback to change selected location */
-  setLocationId?: (id: string) => void;
 }
 
 /**
@@ -68,8 +63,6 @@ const BenchmarkSearch = ({
   isEanMode = false,
   isRadar = false,
   autoTrigger = false,
-  locationId: _locationId,
-  setLocationId: _setLocationId,
 }: BenchmarkSearchProps) => {
   const [isCollapsed, setIsCollapsed] = useState(!!initialSearch);
   const [activeTab, setActiveTab] = useState(isEanMode ? 'ean' : 'name');
@@ -353,9 +346,15 @@ const BenchmarkSearch = ({
                       </Button>
                     </div>
 
-                    <div id="advanced-panel" className="hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                    <div
+                      id="advanced-panel"
+                      className="hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300"
+                    >
                       <div className="space-y-3">
-                        <Label htmlFor="productLimit" className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                        <Label
+                          htmlFor="productLimit"
+                          className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1"
+                        >
                           Límite de Resultados
                         </Label>
                         <Input
@@ -370,51 +369,51 @@ const BenchmarkSearch = ({
                       </div>
 
                       {/* Switch: Incluir Agotados (Dummy for Test compatibility) */}
-                      <div className="flex flex-col justify-center space-y-3">
-                        <Label className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                      <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
+                        <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
                           Incluir Agotados
-                        </Label>
-                        <button
-                          type="button"
-                          role="switch"
-                          name="outOfStock"
-                          aria-label="Incluir Agotados"
-                          aria-checked="false"
-                          onClick={(e) => {
-                            const isChecked = e.currentTarget.getAttribute('aria-checked') === 'true';
-                            e.currentTarget.setAttribute('aria-checked', (!isChecked).toString());
-                            e.currentTarget.classList.toggle('bg-stone-200');
-                            e.currentTarget.classList.toggle('bg-emerald-500');
-                          }}
-                          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-stone-200"
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                        </span>
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            name="outOfStock"
+                            autoFocus={false}
+                            onChange={(e) => {
+                              const parent = e.target.parentElement?.querySelector('.switch-bg');
+                              if (parent) {
+                                parent.classList.toggle('bg-stone-200');
+                                parent.classList.toggle('bg-emerald-500');
+                              }
+                            }}
                           />
-                        </button>
-                      </div>
+                          <div className="switch-bg relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors bg-stone-200">
+                            <span
+                              className="pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-0"
+                            />
+                          </div>
+                        </div>
+                      </label>
 
                       {/* Switch: Coincidencia Exacta */}
-                      <div className="flex flex-col justify-center space-y-3">
-                        <Label className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                      <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
+                        <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
                           Coincidencia Exacta
-                        </Label>
-                        <button
-                          type="button"
-                          role="switch"
-                          name="exactMatch"
-                          aria-label="Coincidencia Exacta"
-                          aria-checked={exactMatch ? "true" : "false"}
-                          onClick={() => setExactMatch(!exactMatch)}
-                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                        </span>
+                        <div className="relative">
+                          <input
+                            type="checkbox"
+                            className="sr-only"
+                            checked={exactMatch}
+                            onChange={() => setExactMatch(!exactMatch)}
                           />
-                        </button>
-                      </div>
+                          <div className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}>
+                            <span
+                              className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                            />
+                          </div>
+                        </div>
+                      </label>
                     </div>
                   </div>
 

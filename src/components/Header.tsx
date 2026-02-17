@@ -21,13 +21,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 const Header = () => {
   const location = useLocation();
@@ -173,25 +166,6 @@ const Header = () => {
                   </span>
                 </div>
 
-                {/* Location Selector - Functional for Tests */}
-                <div className={`flex items-center gap-2 border-l border-stone-200/20 pl-4 ml-1 ${isHomePage ? 'text-white/60' : 'text-stone-500'}`}>
-                  <Select
-                    defaultValue={localStorage.getItem('selectedLocationId') || 'bogota'}
-                    onValueChange={(val) => {
-                      localStorage.setItem('selectedLocationId', val);
-                      window.location.reload();
-                    }}
-                  >
-                    <SelectTrigger className="h-9 w-28 rounded-xl gap-2 font-black text-[9px] uppercase tracking-widest border-none bg-transparent hover:bg-emerald-500/10 hover:text-emerald-500 transition-all focus:ring-0">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <SelectValue placeholder="Ciudad" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-xl border-stone-100 shadow-xl bg-white">
-                      <SelectItem value="bogota" className="text-[10px] font-black uppercase tracking-widest">Bogotá</SelectItem>
-                      <SelectItem value="medellin" className="text-[10px] font-black uppercase tracking-widest">Medellín</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
 
                 <nav className="flex items-center gap-4">
                   <div className="flex items-center gap-2 border-r border-stone-200/20 pr-4 mr-1">
@@ -250,10 +224,10 @@ const Header = () => {
             </div>
           </div>
         </div>
-      </header>
+      </header >
 
       {/* Global Command Center (Spotlight Search) */}
-      <CommandDialog open={open} onOpenChange={setOpen}>
+      < CommandDialog open={open} onOpenChange={setOpen} >
         <div className="bg-white rounded-3xl overflow-hidden shadow-2xl border-none">
           <CommandInput
             placeholder="¿Qué necesitas buscar?"
@@ -306,7 +280,7 @@ const Header = () => {
             ))}
           </CommandList>
         </div>
-      </CommandDialog>
+      </CommandDialog >
     </>
   );
 };

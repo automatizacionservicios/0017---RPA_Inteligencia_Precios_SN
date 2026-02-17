@@ -27,7 +27,6 @@ interface UseBenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string,
     exactMatch?: boolean
   ) => void | Promise<void>;
   /** Pestaña de la interfaz de usuario activa actualmente */
@@ -121,8 +120,7 @@ export const useBenchmarkSearch = ({
       brandName || undefined, // 10. brand
       undefined, // 11. category
       productLimit, // 12. productLimit
-      undefined, // 13. selectedLocationId
-      exactMatch // 14. exactMatch (added to payload)
+      exactMatch // 13. exactMatch (added to payload)
     );
   };
 

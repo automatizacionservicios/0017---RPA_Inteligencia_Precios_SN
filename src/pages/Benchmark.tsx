@@ -84,8 +84,7 @@ const Benchmark = () => {
       undefined, // 10
       undefined, // 11
       undefined, // 12
-      undefined, // 13
-      false // 14
+      false // 13
     );
   };
 
@@ -102,7 +101,6 @@ const Benchmark = () => {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string,
     exactMatch?: boolean
   ) => {
     setIsLoading(true);

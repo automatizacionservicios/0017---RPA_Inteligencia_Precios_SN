@@ -18,14 +18,6 @@ const RadarReferencial = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<BenchmarkResponse | null>(null);
   const [isResultsModalOpen, setIsResultsModalOpen] = useState(false);
-  const [locationId, setLocationId] = useState(
-    () => localStorage.getItem('selectedLocationId') || 'bogota'
-  );
-
-  const handleLocationChange = (newId: string) => {
-    setLocationId(newId);
-    localStorage.setItem('selectedLocationId', newId);
-  };
 
   const [, _setCurrentQuery] = useState('');
 
@@ -52,10 +44,8 @@ const RadarReferencial = () => {
       brand?: string,
       category?: string,
       productLimit?: number,
-      selectedLocationId?: string,
       exactMatch?: boolean
     ) => {
-      const locId = selectedLocationId || locationId;
       setIsLoading(true);
       _setCurrentQuery(productName || ean || '');
       setResults(null);
@@ -79,7 +69,6 @@ const RadarReferencial = () => {
               brand,
               category,
               productLimit,
-              locationId: locId,
               isRadar: true,
               exactMatch,
             }),
@@ -106,7 +95,7 @@ const RadarReferencial = () => {
         setIsLoading(false);
       }
     },
-    [locationId]
+    []
   );
 
   return (
@@ -134,8 +123,6 @@ const RadarReferencial = () => {
                   initialSearch={location.state?.quickSearch}
                   isEanMode={location.state?.isEanMode}
                   autoTrigger={location.state?.autoTrigger}
-                  locationId={locationId}
-                  setLocationId={handleLocationChange}
                 />
               </div>
             </div>

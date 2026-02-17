@@ -23,7 +23,10 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      'https://deno.land/std@0.168.0/http/server.ts': path.resolve(__dirname, './tests/mocks/deno-server.ts'),
+      'https://deno.land/std@0.168.0/http/server.ts': path.resolve(
+        __dirname,
+        './tests/mocks/deno-server.ts'
+      ),
       'https://esm.sh/cheerio@1.0.0-rc.12': 'cheerio',
     },
   },

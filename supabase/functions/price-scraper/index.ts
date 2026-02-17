@@ -71,18 +71,55 @@ serve(async (req: Request) => {
     const results: ProductResult[] = [];
     const isRadar = body.isRadar || false;
 
-    // 4. PARALELIZACIÓN Y RACING TIMEOUT
-    // Consultamos todas las tiendas simultáneamente para maximizar velocidad.
-    const scrapTimeout = isRadar ? 45000 : 25000;
+    // 4. PARALELIZACIÓN Y RACING TIMEOUT (Condicional: EAN vs Nombre)
+    const isEanSearch = !!ean;
+    const DEFAULT_STORE_TIMEOUT = 15000;
     const globalTimeout = isRadar ? 52000 : 30000;
 
+    // Para EAN, permitimos que cada tienda use casi todo el tiempo global
+    const effectiveTimeout = isEanSearch ? (globalTimeout - 2000) : DEFAULT_STORE_TIMEOUT;
+
+    const searchPromises = storesToQuery.map(async (store) => {
+      const strategy = StrategyFactory.getStrategy(store.id, limit);
+      if (!strategy) return [];
+
+      try {
+        // Cortafuegos por tienda: Timeout dinámico según tipo de búsqueda
+        const storeResults = (await Promise.race([
+          strategy.search(query, ean, effectiveTimeout),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('STORE_TIMEOUT')), effectiveTimeout)
+          ),
+        ])) as ProductResult[];
+
+        return storeResults;
+      } catch (e: any) {
+        if (e.message === 'STORE_TIMEOUT') {
+          console.warn(`[Tienda] ${store.id} agotó el tiempo de espera (Timeout ${effectiveTimeout / 1000}s)`);
+        } else {
+          console.error(`[Tienda] ${store.id}: ...  ERROR: ${e}`);
+        }
+        return [];
+      }
+    });
 
     // Esperamos a que todas las tiendas terminen o se agote el tiempo global de la función
-    // Usamos Promise.allSettled para garantizar que esperamos los resultados de lo que sí funcionó
     await Promise.race([
       Promise.allSettled(searchPromises),
       new Promise((resolve) => setTimeout(resolve, globalTimeout)),
     ]);
+
+    // Recolectar resultados de las promesas que se cumplieron
+    for (const p of searchPromises) {
+      try {
+        const res = await p;
+        if (res && Array.isArray(res)) {
+          results.push(...res);
+        }
+      } catch (e) {
+        // Ya manejado individualmente, pero por seguridad
+      }
+    }
 
     // 5. FILTRADO ARMONIZADO (Delegado al Core)
     // Solo aplicamos filtrado por texto estricto si NO estamos buscando por un EAN específico
