@@ -38,23 +38,34 @@ export class VtexStrategy implements ISearchStrategy {
    * @param timeout - Tiempo límite.
    */
   async search(query: string, ean?: string, timeout?: number): Promise<ProductResult[]> {
-    let results: ProductResult[] = [];
+    // Si es una búsqueda por EAN, mantenemos la lógica secuencial limpia ya que es muy rápida
+    if (ean || /^\d{8,14}$/.test(query)) {
+      if (this.isIO) {
+        const results = await this.searchIO(query, timeout);
+        if (results.length > 0) return results;
+      }
+      return await this.searchLegacy(query, ean, timeout);
+    }
 
-    // Intento primario basado en la arquitectura de la tienda
+    // Para búsqueda por nombre, ejecutamos IO y Legacy EN PARALELO
+    // Implementamos "Fast Return": Si IO (más rápido y moderno) trae resultados, no esperamos a Legacy.
+    console.log(`[VTEX] ${this.storeName} iniciando búsqueda paralela (IO + Legacy)`);
+
+    const ioPromise = this.isIO ? this.searchIO(query, timeout) : Promise.resolve([]);
+    const legacyPromise = this.searchLegacy(query, ean, timeout);
+
     if (this.isIO) {
-      results = await this.searchIO(query, timeout);
-    } else {
-      results = await this.searchLegacy(query, ean, timeout);
+      const ioResults = await ioPromise;
+      if (ioResults && ioResults.length > 0) {
+        console.log(`[VTEX] ${this.storeName} Fast Return: IO exitoso, retornando inmediatamente.`);
+        return ioResults.slice(0, this.limit);
+      }
     }
 
-    // Mecanismo de Fallback para Éxito/Carulla (tiendas IO)
-    // Si IO retorna 0 (posible bloqueo o desincronización), intentamos Legacy.
-    if (results.length === 0 && this.isIO) {
-      console.log(`[VTEX] ${this.storeName} IO retornó 0. Reintentando con API Legacy...`);
-      results = await this.searchLegacy(query, ean, timeout);
-    }
-
-    return results;
+    // Si IO no trajo resultados o no está activo, esperamos a Legacy
+    console.log(`[VTEX] ${this.storeName} IO sin resultados o inactivo, esperando Legacy...`);
+    const legacyResults = await legacyPromise;
+    return legacyResults.slice(0, this.limit);
   }
 
   /**

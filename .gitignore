@@ -16,7 +16,7 @@ supabase/.temp/
 node_modules
 dist
 dist-ssr
-coverage
+reports
 *.local
 .vscode/*
 !.vscode/extensions.json

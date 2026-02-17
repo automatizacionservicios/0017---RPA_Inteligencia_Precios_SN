@@ -77,156 +77,112 @@ const BenchmarkResults = ({
   };
 
   // Primero, agrupar productos por EAN/Nombre para manejar la solicitud de agrupación visual
-  const groupedProducts = useMemo(() => {
-    const groups: Record<string, MarketProduct[]> = {};
-
+  // Pre-calcular tokens y gramaje para evitar procesamiento redundante en el loop anidado
+  const productsWithMetadata = useMemo(() => {
     const STOP_WORDS = new Set([
-      'cafe',
-      'tostado',
-      'molido',
-      'bolsa',
-      'doy',
-      'pack',
-      'tetra',
-      'unidad',
-      'unidades',
-      'und',
-      'unds',
-      'gramos',
-      'mililitros',
+      'cafe', 'tostado', 'molido', 'bolsa', 'doy', 'pack', 'tetra',
+      'unidad', 'unidades', 'und', 'unds', 'gramos', 'mililitros',
     ]);
-    const VARIETY_WORDS = [
-      'fuerte',
-      'tradicional',
-      'organico',
-      'balanceado',
-      'descafeinado',
-      'especial',
-      'intenso',
-      'vainilla',
-      'avellana',
-      'light',
-      'original',
-      'plus',
-      'zero',
-      'azucar',
-      'leche',
-      'clon',
-      'omega',
-    ];
 
-    // Obtener tokens significativos para la coincidencia
     const getTokens = (str: string) => {
       if (!str) return [];
       return str
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '') // Eliminar acentos
-        .replace(/\b\d+\s*(g|gr|ml|kg|oz|lb)\b/gi, ' ') // eliminar unidades
-        .replace(/lomitos/g, 'lomo') // Normalizar lomo/lomitos
-        .replace(/[^a-z0-9]/g, ' ') // Símbolos por espacios
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/\b\d+\s*(g|gr|ml|kg|oz|lb)\b/gi, ' ')
+        .replace(/lomitos/g, 'lomo')
+        .replace(/[^a-z0-9]/g, ' ')
         .split(/\s+/)
-        .filter((word) => word.length > 2 && !STOP_WORDS.has(word)); // Solo palabras significativas y no genéricas
+        .filter((word) => word.length > 2 && !STOP_WORDS.has(word));
     };
 
-    // Primera pasada: Agrupar artículos principalmente por EAN (Regla de negocio: EAN es la clave)
-    filteredProducts.forEach((product) => {
+    return filteredProducts.map(p => ({
+      ...p,
+      _tokens: getTokens(p.productName),
+      _weight: p.gramsAmount || (extractGrams(p.productName)?.amount || 0)
+    }));
+  }, [filteredProducts]);
+
+  const groupedProducts = useMemo(() => {
+    const groups: Record<string, typeof productsWithMetadata[0][]> = {};
+    const VARIETY_WORDS = [
+      'fuerte', 'tradicional', 'organico', 'balanceado', 'descafeinado',
+      'especial', 'intenso', 'vainilla', 'avellana', 'light', 'original',
+      'plus', 'zero', 'azucar', 'leche', 'clon', 'omega',
+    ];
+
+    // Primera pasada: EAN
+    productsWithMetadata.forEach((product) => {
       if (product.ean) {
-        const groupKey = product.ean;
-        if (!groups[groupKey]) groups[groupKey] = [];
-        groups[groupKey].push(product);
+        if (!groups[product.ean]) groups[product.ean] = [];
+        groups[product.ean].push(product);
       }
     });
 
-    // Segunda pasada: Agrupar artículos SIN EAN (o con diferentes EANs pero el mismo producto)
-    // en grupos EAN existentes si los nombres coinciden significativamente Y el peso es compatible
-    filteredProducts.forEach((product) => {
+    // Segunda pasada: No EAN
+    productsWithMetadata.forEach((product) => {
       if (!product.ean) {
-        const tokens = getTokens(product.productName);
-        const gramsResult = extractGrams(product.productName);
-        const weight = product.gramsAmount || (gramsResult ? gramsResult.amount : 0);
+        const tokens = product._tokens;
         if (tokens.length === 0) return;
 
-        // Intentar encontrar una coincidencia en los grupos existentes según el solapamiento de tokens + gramaje
         const matchKey = Object.keys(groups).find((key) => {
           return groups[key].some((p) => {
-            const pGramsResult = extractGrams(p.productName);
-            const pWeight = p.gramsAmount || (pGramsResult ? pGramsResult.amount : 0);
-            // Deben tener el mismo peso si ambos lo tienen. Permitir un 5% de tolerancia por diferencias de redondeo
-            if (weight && pWeight && Math.abs(weight - pWeight) > Math.max(weight, pWeight) * 0.05)
+            if (product._weight && p._weight && Math.abs(product._weight - p._weight) > Math.max(product._weight, p._weight) * 0.05)
               return false;
 
-            const pTokens = getTokens(p.productName);
+            const pTokens = p._tokens;
             const common = pTokens.filter((t) => tokens.includes(t));
 
-            // CRÍTICO: Si uno tiene una palabra de variedad que el otro no tiene, son DIFERENTES
             const myVarieties = VARIETY_WORDS.filter((vw) => tokens.includes(vw));
             const pVarieties = VARIETY_WORDS.filter((vw) => pTokens.includes(vw));
-            const differentVarieties =
-              myVarieties.length !== pVarieties.length ||
-              !myVarieties.every((v) => pVarieties.includes(v));
-            if (differentVarieties && (myVarieties.length > 0 || pVarieties.length > 0))
+            if ((myVarieties.length !== pVarieties.length || !myVarieties.every(v => pVarieties.includes(v))) && (myVarieties.length > 0 || pVarieties.length > 0))
               return false;
 
-            // Coincidencia si comparten un token de marca significativo
-            // Y tienen un solapamiento razonable
             const minTokens = Math.min(pTokens.length, tokens.length);
-            return common.length >= 2 && common.length / minTokens >= 0.7; // Aumentado de 0.6 para mayor precisión
+            return common.length >= 2 && common.length / minTokens >= 0.7;
           });
         });
 
         if (matchKey) {
           groups[matchKey].push(product);
         } else {
-          // Sin coincidencia por EAN, agrupar por una clave derivada del nombre
-          const nameKey = `name_${tokens.sort().join('')}_${weight || ''}`;
+          const nameKey = `name_${tokens.sort().join('')}_${product._weight || ''}`;
           if (!groups[nameKey]) groups[nameKey] = [];
           groups[nameKey].push(product);
         }
       }
     });
 
-    // Convertir a un array de grupos para facilitar la ordenación
     return Object.entries(groups).map(([key, groupProducts]) => {
       const eanProduct = groupProducts.find((p) => p.ean);
-      // Seleccionar el nombre más representativo: el nombre EAN si está disponible, de lo contrario el más corto (generalmente el más limpio)
-      const bestName =
-        eanProduct?.productName ||
-        [...groupProducts].sort((a, b) => a.productName.length - b.productName.length)[0]
-          .productName;
+      const bestName = eanProduct?.productName ||
+        [...groupProducts].sort((a, b) => a.productName.length - b.productName.length)[0].productName;
 
       return {
         key,
         ean: eanProduct?.ean,
         productName: bestName,
         products: groupProducts,
-        minPrice: Math.min(
-          ...groupProducts
-            .filter((p) => p.price > 0)
-            .map((p) => p.price)
-            .concat(Infinity)
-        ),
+        minPrice: Math.min(...groupProducts.filter((p) => p.price > 0).map((p) => p.price).concat(Infinity)),
         maxPrice: Math.max(...groupProducts.map((p) => p.price).concat(-Infinity)),
         stores: Array.from(new Set(groupProducts.map((p) => p.store))).join(', '),
       };
     });
-  }, [filteredProducts]);
+  }, [productsWithMetadata]);
 
-  const sortedGroups = [...groupedProducts].sort((a, b) => {
-    const multiplier = sortDirection === 'asc' ? 1 : -1;
-
-    if (sortField === 'store') {
-      return multiplier * a.stores.localeCompare(b.stores);
-    }
-
-    if (sortField === 'price') {
-      const valA = a.minPrice === Infinity ? 0 : a.minPrice;
-      const valB = b.minPrice === Infinity ? 0 : b.minPrice;
-      return multiplier * (valA - valB);
-    }
-
-    return 0;
-  });
+  const sortedGroups = useMemo(() => {
+    return [...groupedProducts].sort((a, b) => {
+      const multiplier = sortDirection === 'asc' ? 1 : -1;
+      if (sortField === 'store') return multiplier * a.stores.localeCompare(b.stores);
+      if (sortField === 'price') {
+        const valA = a.minPrice === Infinity ? 0 : a.minPrice;
+        const valB = b.minPrice === Infinity ? 0 : b.minPrice;
+        return multiplier * (valA - valB);
+      }
+      return 0;
+    });
+  }, [groupedProducts, sortField, sortDirection]);
 
   const handleSort = (field: SortField) => {
     if (sortField === field) {
@@ -472,12 +428,12 @@ const BenchmarkResults = ({
                   const groupTargetWeight =
                     weights.length > 0
                       ? // Usar la moda o el valor que más se repite
-                        Object.entries(
-                          weights.reduce(
-                            (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
-                            {} as Record<number, number>
-                          )
-                        ).sort((a, b) => b[1] - a[1])[0][0]
+                      Object.entries(
+                        weights.reduce(
+                          (acc, w) => ({ ...acc, [w]: (acc[w] || 0) + 1 }),
+                          {} as Record<number, number>
+                        )
+                      ).sort((a, b) => b[1] - a[1])[0][0]
                       : null;
 
                   // Usar todos los productos válidos para el Benchmark real (no excluir por gramaje, solo alertar)
@@ -503,7 +459,7 @@ const BenchmarkResults = ({
                         key={group.key}
                         initial={{ opacity: 0, y: 15 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.5, delay: idx * 0.08 }}
+                        transition={{ duration: 0.3, delay: Math.min(idx * 0.015, 0.5) }}
                         className="bg-stone-50/50 border-t-2 border-stone-100/50 cursor-pointer hover:bg-stone-50 transition-colors"
                         onClick={() => toggleGroup(group.key)}
                       >
@@ -606,11 +562,10 @@ const BenchmarkResults = ({
                                     <TableCell className="pl-12 py-5">
                                       <div className="flex items-center gap-3">
                                         <div
-                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${
-                                            isLowestPrice
-                                              ? 'border-emerald-200 ring-4 ring-emerald-500/10'
-                                              : 'border-stone-100'
-                                          }`}
+                                          className={`w-8 h-8 rounded-full overflow-hidden border flex items-center justify-center bg-white shadow-sm transition-all ${isLowestPrice
+                                            ? 'border-emerald-200 ring-4 ring-emerald-500/10'
+                                            : 'border-stone-100'
+                                            }`}
                                         >
                                           {getStoreBrand(product.store).icon ? (
                                             <img
@@ -673,12 +628,12 @@ const BenchmarkResults = ({
                                             {/* Alerta de Gramaje fuera de rango - Ahora al lado del gramaje */}
                                             {groupTargetWeight &&
                                               extractGrams(product.productName)?.amount !==
-                                                undefined &&
+                                              undefined &&
                                               Math.abs(
                                                 (extractGrams(product.productName)?.amount || 0) -
-                                                  Number(groupTargetWeight)
+                                                Number(groupTargetWeight)
                                               ) >
-                                                Number(groupTargetWeight) * 0.1 && (
+                                              Number(groupTargetWeight) * 0.1 && (
                                                 <div className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 border border-amber-200 text-[7px] font-black text-amber-700 uppercase tracking-tighter shadow-sm shrink-0">
                                                   <AlertTriangle className="w-2 h-2 text-amber-500" />
                                                   VERIF. GRAM
@@ -774,14 +729,13 @@ const BenchmarkResults = ({
                                     </TableCell>
                                     <TableCell>
                                       <div
-                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${
-                                          product.availability
-                                            .toLowerCase()
-                                            .includes('disponible') ||
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter border transition-all shadow-sm ${product.availability
+                                          .toLowerCase()
+                                          .includes('disponible') ||
                                           product.availability === 'En stock'
-                                            ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
-                                            : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
-                                        }`}
+                                          ? 'bg-emerald-50 border-emerald-100 text-emerald-600'
+                                          : 'bg-rose-50 border-rose-100 text-rose-600 grayscale opacity-70'
+                                          }`}
                                       >
                                         <div
                                           className={`w-1.5 h-1.5 rounded-full ${product.availability.toLowerCase().includes('disponible') || product.availability === 'En stock' ? 'bg-emerald-400 shadow-[0_0_5px_rgba(52,211,153,0.5)]' : 'bg-rose-400'}`}

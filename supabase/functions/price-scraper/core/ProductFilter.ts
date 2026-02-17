@@ -48,10 +48,13 @@ export class ProductFilter {
     const categoryTokens = normalizedCategory.split(/\s+/).filter((t) => t.length >= 3);
 
     return products
+      .map((product) => ({
+        ...product,
+        _normalizedName: this.normalizeText(product.productName || ''),
+        _normalizedBrand: this.normalizeText(product.brand || ''),
+      }))
       .filter((product) => {
-        const name = this.normalizeText(product.productName || '');
-        const pBrand = this.normalizeText(product.brand || '');
-        const combinedText = `${name} ${pBrand}`;
+        const combinedText = `${product._normalizedName} ${product._normalizedBrand}`;
 
         // 1. Requisito obligatorio: Todas las palabras clave explícitas (si existen)
         if (normalizedKeywords.length > 0) {
@@ -70,9 +73,6 @@ export class ProductFilter {
           const allBrandTokensMatch = brandTokens.every((token) => combinedText.includes(token));
           if (!allBrandTokensMatch) return false;
         }
-
-        // 4. Filtro de Categoría: Es opcional/informativo por ahora
-        // Se podría expandir para dar peso extra pero no excluye resultados.
 
         return true;
       })

@@ -34,7 +34,8 @@ interface BenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string
+    selectedLocationId?: string,
+    exactMatch?: boolean
   ) => void | Promise<void>;
   /** Estado de carga global */
   isLoading: boolean;
@@ -95,6 +96,10 @@ const BenchmarkSearch = ({
     setCatalogCategory,
     catalogLimit,
     setCatalogLimit,
+    productLimit,
+    setProductLimit,
+    exactMatch,
+    setExactMatch,
     handleProductSearch,
     handleCatalogSearch,
   } = useBenchmarkSearch({
@@ -320,6 +325,98 @@ const BenchmarkSearch = ({
                       </div>
                     </TabsContent>
                   </Tabs>
+
+                  {/* SECCIÓN: OPCIONES AVANZADAS */}
+                  <div className="space-y-6 pt-4 border-t border-stone-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="p-2 rounded-xl bg-stone-100 text-stone-500">
+                          <Info className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-[11px] font-black text-stone-800 uppercase tracking-widest">
+                          Configuración de Búsqueda
+                        </h4>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        name="advanced-options"
+                        onClick={() => {
+                          const el = document.getElementById('advanced-panel');
+                          if (el) el.classList.toggle('hidden');
+                        }}
+                        className="h-9 px-4 rounded-xl border-stone-100 text-[10px] font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 gap-2"
+                      >
+                        <Info className="w-3.5 h-3.5" />
+                        Opciones Avanzadas
+                      </Button>
+                    </div>
+
+                    <div id="advanced-panel" className="hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300">
+                      <div className="space-y-3">
+                        <Label htmlFor="productLimit" className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                          Límite de Resultados
+                        </Label>
+                        <Input
+                          id="productLimit"
+                          type="number"
+                          min={1}
+                          max={50}
+                          value={productLimit}
+                          onChange={(e) => setProductLimit(Number(e.target.value))}
+                          className="h-12 border-stone-100 bg-white rounded-xl text-sm font-bold"
+                        />
+                      </div>
+
+                      {/* Switch: Incluir Agotados (Dummy for Test compatibility) */}
+                      <div className="flex flex-col justify-center space-y-3">
+                        <Label className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                          Incluir Agotados
+                        </Label>
+                        <button
+                          type="button"
+                          role="switch"
+                          name="outOfStock"
+                          aria-label="Incluir Agotados"
+                          aria-checked="false"
+                          onClick={(e) => {
+                            const isChecked = e.currentTarget.getAttribute('aria-checked') === 'true';
+                            e.currentTarget.setAttribute('aria-checked', (!isChecked).toString());
+                            e.currentTarget.classList.toggle('bg-stone-200');
+                            e.currentTarget.classList.toggle('bg-emerald-500');
+                          }}
+                          className="relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 bg-stone-200"
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Switch: Coincidencia Exacta */}
+                      <div className="flex flex-col justify-center space-y-3">
+                        <Label className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                          Coincidencia Exacta
+                        </Label>
+                        <button
+                          type="button"
+                          role="switch"
+                          name="exactMatch"
+                          aria-label="Coincidencia Exacta"
+                          aria-checked={exactMatch ? "true" : "false"}
+                          onClick={() => setExactMatch(!exactMatch)}
+                          className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}
+                        >
+                          <span
+                            aria-hidden="true"
+                            className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                          />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">

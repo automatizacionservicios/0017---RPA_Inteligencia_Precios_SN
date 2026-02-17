@@ -260,7 +260,8 @@ export const ParetoInput = ({ onResultsFound }: ParetoInputProps) => {
             setGsheetUrl={setGsheetUrl}
             isFetchingSheet={isFetchingSheet}
             onLoadFromGSheet={() => loadFromGSheet(gsheetUrl)}
-            onPaste={(e: React.ClipboardEvent) => handlePaste(e.clipboardData.getData('text'))}
+            onPaste={(e: React.ClipboardEvent<HTMLTextAreaElement>) => handlePaste(e.clipboardData.getData('text'))}
+            onTextChange={handlePaste} // Handle fill() by treating it as a paste
           />
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4">

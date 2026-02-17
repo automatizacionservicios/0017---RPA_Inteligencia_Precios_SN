@@ -47,7 +47,8 @@ const StockAudit = () => {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string
+    selectedLocationId?: string,
+    exactMatch?: boolean
   ) => {
     const locId = selectedLocationId || locationId;
     setIsLoading(true);
@@ -73,6 +74,7 @@ const StockAudit = () => {
             brand,
             category,
             locationId: locId,
+            exactMatch,
           }),
         }
       );
@@ -215,11 +217,10 @@ const StockAudit = () => {
                               </span>
                             </div>
                             <Badge
-                              className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest ${
-                                isAvailable
+                              className={`rounded-full px-3 py-1 text-[9px] font-black uppercase tracking-widest ${isAvailable
                                   ? 'bg-emerald-50 text-emerald-600 border-emerald-100'
                                   : 'bg-rose-50 text-rose-600 border-rose-100'
-                              }`}
+                                }`}
                             >
                               {isAvailable ? (
                                 <span className="flex items-center gap-1.5">

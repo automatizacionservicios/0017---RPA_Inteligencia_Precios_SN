@@ -49,11 +49,20 @@ export class FarmatodoStrategy implements ISearchStrategy {
     };
 
     try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(payload),
-      });
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), _timeout || 15000);
+
+      let res;
+      try {
+        res = await fetch(url, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify(payload),
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(fetchTimeout);
+      }
 
       if (!res.ok) {
         console.error(`[FARMATODO] Falló fetch: ${res.status}`);

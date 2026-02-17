@@ -52,7 +52,15 @@ export class RappiStrategy implements ISearchStrategy {
       headers['Cookie'] = `currentLocation=${encodeURIComponent(JSON.stringify(currentLocation))}`;
       console.log(`[RAPPI] Usando ubicación técnica: Bogotá (Nacional)`);
 
-      const res = await fetch(url, { headers });
+      const controller = new AbortController();
+      const fetchTimeout = setTimeout(() => controller.abort(), _timeout || 15000);
+
+      let res;
+      try {
+        res = await fetch(url, { headers, signal: controller.signal });
+      } finally {
+        clearTimeout(fetchTimeout);
+      }
 
       if (!res.ok) {
         console.error(`[RAPPI] Error en fetch: ${res.status}`);

@@ -9,6 +9,7 @@ interface DataIngestionCardsProps {
   isFetchingSheet: boolean;
   onLoadFromGSheet: () => void;
   onPaste: (e: React.ClipboardEvent<HTMLTextAreaElement>) => void;
+  onTextChange?: (text: string) => void;
 }
 
 export const DataIngestionCards = ({
@@ -17,6 +18,7 @@ export const DataIngestionCards = ({
   isFetchingSheet,
   onLoadFromGSheet,
   onPaste,
+  onTextChange,
 }: DataIngestionCardsProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-4">
@@ -86,6 +88,7 @@ export const DataIngestionCards = ({
               placeholder="Copia aquí tus datos de Excel..."
               className="min-h-[160px] rounded-[24px] border-2 border-dashed border-stone-200 bg-stone-50/50 hover:bg-white focus:bg-white focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 text-center flex flex-col items-center justify-center pt-12 transition-all text-sm font-medium shadow-inner resize-none"
               onPaste={onPaste}
+              onChange={(e) => onTextChange?.(e.target.value)}
             />
             <div className="absolute inset-x-0 top-12 flex justify-center pointer-events-none opacity-40">
               <Target className="w-8 h-8 text-stone-300 animate-pulse" />

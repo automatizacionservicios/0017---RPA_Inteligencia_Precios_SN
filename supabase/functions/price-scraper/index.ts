@@ -71,27 +71,18 @@ serve(async (req: Request) => {
     const results: ProductResult[] = [];
     const isRadar = body.isRadar || false;
 
-    // 4. POOL DE CONCURRENCIA DINÁMICA
-    // Procesamos en bloques para evitar saturar la memoria o ser bloqueados masivamente
-    const poolSize = isRadar ? 10 : 5;
+    // 4. PARALELIZACIÓN Y RACING TIMEOUT
+    // Consultamos todas las tiendas simultáneamente para maximizar velocidad.
     const scrapTimeout = isRadar ? 45000 : 25000;
+    const globalTimeout = isRadar ? 52000 : 30000;
 
-    for (let i = 0; i < storesToQuery.length; i += poolSize) {
-      const chunk = storesToQuery.slice(i, i + poolSize);
-      const promises = chunk.map(async (store) => {
-        const strategy = StrategyFactory.getStrategy(store.id, limit);
-        if (!strategy) return [];
-        try {
-          // Nota: Pasamos null en location ya que ahora es Nacional
-          return await strategy.search(query, ean, scrapTimeout);
-        } catch (e) {
-          console.error(`[ORQUESTADOR] Error en ${store.id}: ${e}`);
-          return [];
-        }
-      });
-      const chunkResults = await Promise.all(promises);
-      chunkResults.forEach((r) => results.push(...r));
-    }
+
+    // Esperamos a que todas las tiendas terminen o se agote el tiempo global de la función
+    // Usamos Promise.allSettled para garantizar que esperamos los resultados de lo que sí funcionó
+    await Promise.race([
+      Promise.allSettled(searchPromises),
+      new Promise((resolve) => setTimeout(resolve, globalTimeout)),
+    ]);
 
     // 5. FILTRADO ARMONIZADO (Delegado al Core)
     // Solo aplicamos filtrado por texto estricto si NO estamos buscando por un EAN específico

@@ -50,11 +50,8 @@ const ResultsFilters = ({ products, onFilterChange }: ResultsFiltersProps) => {
 
   useEffect(() => {
     setSelectedStores(stores);
-  }, [stores]);
-
-  useEffect(() => {
     setSelectedBrands(brands);
-  }, [brands]);
+  }, [stores, brands]);
 
   // Apply filters with useCallback
   const applyFilters = useCallback(() => {
@@ -179,11 +176,10 @@ const ResultsFilters = ({ products, onFilterChange }: ResultsFiltersProps) => {
         <div className="flex items-center justify-between p-4 mb-8 rounded-2xl bg-emerald-50/50 border border-emerald-100 shadow-inner group/promo transition-all hover:bg-emerald-50">
           <div className="flex items-center gap-4">
             <div
-              className={`p-3 rounded-xl transition-all duration-500 ${
-                onlyDeals
+              className={`p-3 rounded-xl transition-all duration-500 ${onlyDeals
                   ? 'bg-emerald-600 text-white shadow-lg'
                   : 'bg-white text-emerald-600 border border-emerald-100'
-              }`}
+                }`}
             >
               <TrendingDown className="w-5 h-5" />
             </div>
@@ -199,17 +195,15 @@ const ResultsFilters = ({ products, onFilterChange }: ResultsFiltersProps) => {
           <Button
             variant={onlyDeals ? 'default' : 'outline'}
             onClick={() => setOnlyDeals(!onlyDeals)}
-            className={`h-11 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all duration-500 gap-2 ${
-              onlyDeals
+            className={`h-11 px-6 rounded-xl font-black text-[11px] uppercase tracking-widest transition-all duration-500 gap-2 ${onlyDeals
                 ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-xl shadow-emerald-500/20'
                 : 'border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white'
-            }`}
+              }`}
           >
             {onlyDeals ? 'Detección Activa' : 'Filtrar por Ofertas'}
             <div
-              className={`w-2 h-2 rounded-full ${
-                onlyDeals ? 'bg-white animate-pulse' : 'bg-emerald-200'
-              }`}
+              className={`w-2 h-2 rounded-full ${onlyDeals ? 'bg-white animate-pulse' : 'bg-emerald-200'
+                }`}
             />
           </Button>
         </div>

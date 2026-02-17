@@ -27,7 +27,8 @@ interface UseBenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    selectedLocationId?: string
+    selectedLocationId?: string,
+    exactMatch?: boolean
   ) => void | Promise<void>;
   /** Pestaña de la interfaz de usuario activa actualmente */
   activeTab: string;
@@ -56,6 +57,8 @@ export const useBenchmarkSearch = ({
   const [brandName, setBrandName] = useState('');
   const [eanCode, setEanCode] = useState('');
   const [keywords, setKeywords] = useState('');
+  const [productLimit, setProductLimit] = useState<number>(10);
+  const [exactMatch, setExactMatch] = useState(false);
 
   // Estado del modo de catálogo de tienda
   const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState('');
@@ -117,7 +120,9 @@ export const useBenchmarkSearch = ({
       activeTab === 'ean' ? eanCode : undefined, // 9. ean
       brandName || undefined, // 10. brand
       undefined, // 11. category
-      undefined // 12. productLimit
+      productLimit, // 12. productLimit
+      undefined, // 13. selectedLocationId
+      exactMatch // 14. exactMatch (added to payload)
     );
   };
 
@@ -198,6 +203,10 @@ export const useBenchmarkSearch = ({
     setCatalogCategory,
     catalogLimit,
     setCatalogLimit,
+    productLimit,
+    setProductLimit,
+    exactMatch,
+    setExactMatch,
     handleProductSearch,
     handleCatalogSearch,
   };

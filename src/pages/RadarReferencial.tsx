@@ -52,7 +52,8 @@ const RadarReferencial = () => {
       brand?: string,
       category?: string,
       productLimit?: number,
-      selectedLocationId?: string
+      selectedLocationId?: string,
+      exactMatch?: boolean
     ) => {
       const locId = selectedLocationId || locationId;
       setIsLoading(true);
@@ -80,6 +81,7 @@ const RadarReferencial = () => {
               productLimit,
               locationId: locId,
               isRadar: true,
+              exactMatch,
             }),
           }
         );

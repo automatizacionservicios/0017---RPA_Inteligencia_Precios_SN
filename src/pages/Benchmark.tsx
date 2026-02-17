@@ -80,10 +80,12 @@ const Benchmark = () => {
       { searchRecency: 'week', deepResearch: true },
       undefined, // no storeId
       undefined, // no keywords
-      ean, // Optional EAN filter
-      undefined, // no brand
-      undefined, // no category
-      undefined // no limit
+      ean, // 9
+      undefined, // 10
+      undefined, // 11
+      undefined, // 12
+      undefined, // 13
+      false // 14
     );
   };
 
@@ -99,7 +101,9 @@ const Benchmark = () => {
     ean?: string,
     brand?: string,
     category?: string,
-    productLimit?: number
+    productLimit?: number,
+    selectedLocationId?: string,
+    exactMatch?: boolean
   ) => {
     setIsLoading(true);
 
@@ -138,6 +142,7 @@ const Benchmark = () => {
             brand: brand,
             category: category,
             productLimit: productLimit,
+            exactMatch: exactMatch,
           }),
         }
       );
