@@ -29,13 +29,17 @@ export class ProductFilter {
    * @param keywords - Palabras clave adicionales obligatorias.
    * @param brand - Marca específica requerida.
    * @param category - Categoría sugerida (informativa).
+   * @param exactMatch - Si es true, busca la consulta completa sin tokenizar.
+   * @param includeOutOfStock - Si es true, permite productos sin stock o con precio 0.
    */
   static filterProducts(
     products: any[],
     query: string,
     keywords: string[] = [],
     brand?: string,
-    category?: string
+    category?: string,
+    exactMatch = false,
+    includeOutOfStock = false
   ) {
     const normalizedQuery = this.normalizeText(query);
     const normalizedKeywords = keywords.map((k) => this.normalizeText(k));
@@ -56,19 +60,32 @@ export class ProductFilter {
       .filter((product) => {
         const combinedText = `${product._normalizedName} ${product._normalizedBrand}`;
 
-        // 1. Requisito obligatorio: Todas las palabras clave explícitas (si existen)
+        // 1. Requisito de Stock: Si no se pide incluir agotados, filtrar por disponibilidad y precio
+        if (!includeOutOfStock) {
+          const isAgotado = product.availability === 'Agotado';
+          const hasNoPrice = !product.price || product.price < 50;
+          if (isAgotado || hasNoPrice) return false;
+        }
+
+        // 2. Requisito obligatorio: Todas las palabras clave explícitas (si existen)
         if (normalizedKeywords.length > 0) {
           const allKeywordsMatch = normalizedKeywords.every((k) => combinedText.includes(k));
           if (!allKeywordsMatch) return false;
         }
 
-        // 2. Búsqueda estricta: Cada token del nombre de la consulta DEBE estar presente
+        // 3. Búsqueda por consulta (Exacta vs Por Tokens)
         if (queryTokens.length > 0) {
-          const allQueryTokensMatch = queryTokens.every((token) => combinedText.includes(token));
-          if (!allQueryTokensMatch) return false;
+          if (exactMatch) {
+            // Modo Exacto: La consulta normalizada entera debe estar en el texto combinado
+            if (!combinedText.includes(normalizedQuery)) return false;
+          } else {
+            // Modo Normal: Cada token del nombre de la consulta DEBE estar presente
+            const allQueryTokensMatch = queryTokens.every((token) => combinedText.includes(token));
+            if (!allQueryTokensMatch) return false;
+          }
         }
 
-        // 3. Filtro de Marca: Si se especifica, DEBE estar presente
+        // 4. Filtro de Marca: Si se especifica, DEBE estar presente
         if (brandTokens.length > 0) {
           const allBrandTokensMatch = brandTokens.every((token) => combinedText.includes(token));
           if (!allBrandTokensMatch) return false;

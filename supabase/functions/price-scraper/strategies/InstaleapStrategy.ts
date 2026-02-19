@@ -14,14 +14,17 @@ import { extractGrams, getStandardHeaders } from '../core/utils.ts';
 export class InstaleapStrategy implements ISearchStrategy {
   private storeName: string;
   private domain: string;
+  private limit: number;
 
   /**
    * @param domain - Dominio de la tienda (ej: tienda.com).
    * @param storeName - Nombre identificador de la tienda.
+   * @param limit - Límite de resultados.
    */
-  constructor(domain: string, storeName: string) {
+  constructor(domain: string, storeName: string, limit: number = 20) {
     this.domain = domain;
     this.storeName = storeName;
+    this.limit = Math.min(Math.max(limit, 5), 50);
   }
 
   /**
@@ -140,7 +143,7 @@ export class InstaleapStrategy implements ISearchStrategy {
           sourceUrl: url,
         });
 
-        if (results.length >= 15) break;
+        if (results.length >= this.limit) break;
       }
 
       console.log(`[INSTALEAP] ${this.storeName} encontró ${results.length} productos.`);

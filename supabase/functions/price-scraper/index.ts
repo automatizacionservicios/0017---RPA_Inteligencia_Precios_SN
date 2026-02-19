@@ -36,10 +36,14 @@ serve(async (req: Request) => {
       brand,
       category,
       productLimit,
+      exactMatch,
+      includeOutOfStock,
     } = body;
 
     // 1. Parámetros por defecto
     const limit = productLimit ? Math.min(Math.max(productLimit, 5), 50) : 20;
+    const isExact = !!exactMatch;
+    const isIncludeOOS = !!includeOutOfStock;
 
     // 2. Auto-detección de EAN: Si el nombre parece un EAN, lo tratamos como tal
     if (!ean && productName && /^\d{8,14}$/.test(productName.trim())) {
@@ -132,7 +136,9 @@ serve(async (req: Request) => {
         productName || query,
         keywords,
         brand,
-        category
+        category,
+        isExact,
+        isIncludeOOS
       );
     }
 
@@ -172,6 +178,20 @@ serve(async (req: Request) => {
       }
       finalProducts = zipped;
     }
+
+    // 8. FINAL SAFETY LIMIT CHECK (Per Store)
+    // Ensures that no store (including Rappi's sub-merchants) exceeds the requested limit
+    const perStoreCounts: Record<string, number> = {};
+    const limitedProducts: ProductResult[] = [];
+
+    for (const p of finalProducts) {
+      perStoreCounts[p.store] = perStoreCounts[p.store] || 0;
+      if (perStoreCounts[p.store] < limit) {
+        limitedProducts.push(p);
+        perStoreCounts[p.store]++;
+      }
+    }
+    finalProducts = limitedProducts;
 
     console.log(`[ORQUESTADOR] Retornando ${finalProducts.length} resultados.`);
 

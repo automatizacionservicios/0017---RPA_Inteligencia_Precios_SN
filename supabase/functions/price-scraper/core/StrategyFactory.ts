@@ -165,13 +165,13 @@ export class StrategyFactory {
       case 'vtex-io':
         return new VtexStrategy(config.vtexDomain, config.name, true, limit);
       case 'cheerio':
-        return new CheerioStrategy(config, config.name);
+        return new CheerioStrategy(config, config.name, limit);
       case 'algolia':
         return new FarmatodoStrategy();
       case 'instaleap':
-        return new InstaleapStrategy(config.domain, config.name);
+        return new InstaleapStrategy(config.domain, config.name, limit);
       case 'rappi':
-        return new RappiStrategy(config.name);
+        return new RappiStrategy(config.name, limit);
       default:
         return null;
     }

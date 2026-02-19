@@ -39,4 +39,6 @@ export interface BenchmarkRequest {
   productLimit?: number; // Max products to fetch per store (default: 20, max: 50)
   isRadar?: boolean; // Flag to enable surgical optimization for Promo Radar
   locationId?: string; // id of the city for geo-localized search
+  exactMatch?: boolean; // Enable exact string matching
+  includeOutOfStock?: boolean; // Include products with no stock
 }

@@ -83,8 +83,9 @@ const Benchmark = () => {
       ean, // 9
       undefined, // 10
       undefined, // 11
-      undefined, // 12
-      false // 13
+      undefined, // 12. productLimit
+      false, // 13. exactMatch
+      false // 14. includeOutOfStock
     );
   };
 
@@ -101,7 +102,8 @@ const Benchmark = () => {
     brand?: string,
     category?: string,
     productLimit?: number,
-    exactMatch?: boolean
+    exactMatch?: boolean,
+    includeOutOfStock?: boolean
   ) => {
     setIsLoading(true);
 
@@ -141,6 +143,7 @@ const Benchmark = () => {
             category: category,
             productLimit: productLimit,
             exactMatch: exactMatch,
+            includeOutOfStock: includeOutOfStock,
           }),
         }
       );

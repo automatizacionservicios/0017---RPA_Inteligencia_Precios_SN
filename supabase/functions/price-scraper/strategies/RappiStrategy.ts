@@ -14,12 +14,15 @@ import { extractGrams, getStandardHeaders } from '../core/utils.ts';
  */
 export class RappiStrategy implements ISearchStrategy {
   private storeName: string;
+  private limit: number;
 
   /**
    * @param storeName - Nombre base para identificar los resultados (default: RAPPI).
+   * @param limit - Límite de resultados por sub-tienda.
    */
-  constructor(storeName: string = 'RAPPI') {
+  constructor(storeName: string = 'RAPPI', limit: number = 20) {
     this.storeName = storeName;
+    this.limit = Math.min(Math.max(limit, 5), 50);
   }
 
   /**
@@ -122,11 +125,18 @@ export class RappiStrategy implements ISearchStrategy {
 
       const results: ProductResult[] = [];
       const seenIds = new Set<string>();
+      const merchantCounts: Record<string, number> = {};
 
       for (const p of productsRaw) {
+        const merchant = p.merchantName || 'General';
+        merchantCounts[merchant] = merchantCounts[merchant] || 0;
+
+        // LÍMITE DINÁMICO: Respetamos el límite por cada aliado de Rappi
+        if (merchantCounts[merchant] >= this.limit) continue;
+
         const id = p.masterProductId || p.productId || p.id;
         // La llave única incluye el merchant para permitir el mismo producto en tiendas distintas
-        const uniqueKey = `${p.merchantName || ''}_${id}`;
+        const uniqueKey = `${merchant}_${id}`;
         if (!p.name || !id || seenIds.has(uniqueKey)) continue;
         seenIds.add(uniqueKey);
 
@@ -166,7 +176,7 @@ export class RappiStrategy implements ISearchStrategy {
           sourceUrl: url,
         });
 
-        if (results.length >= 30) break;
+        merchantCounts[merchant]++;
       }
 
       console.log(`[RAPPI] Encontrados ${results.length} productos.`);

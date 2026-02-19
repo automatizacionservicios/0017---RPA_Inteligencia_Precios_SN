@@ -34,7 +34,8 @@ interface BenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    exactMatch?: boolean
+    exactMatch?: boolean,
+    includeOutOfStock?: boolean
   ) => void | Promise<void>;
   /** Estado de carga global */
   isLoading: boolean;
@@ -93,6 +94,8 @@ const BenchmarkSearch = ({
     setProductLimit,
     exactMatch,
     setExactMatch,
+    includeOutOfStock,
+    setIncludeOutOfStock,
     handleProductSearch,
     handleCatalogSearch,
   } = useBenchmarkSearch({
@@ -213,6 +216,9 @@ const BenchmarkSearch = ({
                         </div>
                       </TabsTrigger>
                     </TabsList>
+                    <p className="text-[9px] font-black text-stone-400 uppercase tracking-[0.15em] mt-4 ml-1 text-center opacity-60">
+                      Límite estándar: 30 productos por tienda para máxima cobertura
+                    </p>
 
                     <TabsContent
                       value="ean"
@@ -319,103 +325,105 @@ const BenchmarkSearch = ({
                     </TabsContent>
                   </Tabs>
 
-                  {/* SECCIÓN: OPCIONES AVANZADAS */}
-                  <div className="space-y-6 pt-4 border-t border-stone-100">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-stone-100 text-stone-500">
-                          <Info className="w-4 h-4" />
+                  {/* SECCIÓN: OPCIONES AVANZADAS (Oculta en modo EAN) */}
+                  {activeTab !== 'ean' && (
+                    <div className="space-y-6 pt-4 border-t border-stone-100">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-stone-100 text-stone-500">
+                            <Info className="w-4 h-4" />
+                          </div>
+                          <h4 className="text-[11px] font-black text-stone-800 uppercase tracking-widest">
+                            Configuración de Búsqueda
+                          </h4>
                         </div>
-                        <h4 className="text-[11px] font-black text-stone-800 uppercase tracking-widest">
-                          Configuración de Búsqueda
-                        </h4>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        name="advanced-options"
-                        onClick={() => {
-                          const el = document.getElementById('advanced-panel');
-                          if (el) el.classList.toggle('hidden');
-                        }}
-                        className="h-9 px-4 rounded-xl border-stone-100 text-[10px] font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 gap-2"
-                      >
-                        <Info className="w-3.5 h-3.5" />
-                        Opciones Avanzadas
-                      </Button>
-                    </div>
-
-                    <div
-                      id="advanced-panel"
-                      className="hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300"
-                    >
-                      <div className="space-y-3">
-                        <Label
-                          htmlFor="productLimit"
-                          className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1"
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          name="advanced-options"
+                          onClick={() => {
+                            const el = document.getElementById('advanced-panel');
+                            if (el) el.classList.toggle('hidden');
+                          }}
+                          className="h-9 px-4 rounded-xl border-stone-100 text-[10px] font-black uppercase tracking-widest text-stone-500 hover:bg-stone-50 gap-2"
                         >
-                          Límite de Resultados
-                        </Label>
-                        <Input
-                          id="productLimit"
-                          type="number"
-                          min={1}
-                          max={50}
-                          value={productLimit}
-                          onChange={(e) => setProductLimit(Number(e.target.value))}
-                          className="h-12 border-stone-100 bg-white rounded-xl text-sm font-bold"
-                        />
+                          <Info className="w-3.5 h-3.5" />
+                          Opciones Avanzadas
+                        </Button>
                       </div>
 
-                      {/* Switch: Incluir Agotados (Dummy for Test compatibility) */}
-                      <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
-                        <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
-                          Incluir Agotados
-                        </span>
-                        <div className="relative">
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            name="outOfStock"
-                            autoFocus={false}
-                            onChange={(e) => {
-                              const parent = e.target.parentElement?.querySelector('.switch-bg');
-                              if (parent) {
-                                parent.classList.toggle('bg-stone-200');
-                                parent.classList.toggle('bg-emerald-500');
-                              }
-                            }}
-                          />
-                          <div className="switch-bg relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors bg-stone-200">
-                            <span className="pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform translate-x-0" />
-                          </div>
-                        </div>
-                      </label>
-
-                      {/* Switch: Coincidencia Exacta */}
-                      <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
-                        <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
-                          Coincidencia Exacta
-                        </span>
-                        <div className="relative">
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={exactMatch}
-                            onChange={() => setExactMatch(!exactMatch)}
-                          />
-                          <div
-                            className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}
+                      <div
+                        id="advanced-panel"
+                        className="hidden grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-stone-50 rounded-2xl border border-stone-100 animate-in fade-in slide-in-from-top-2 duration-300"
+                      >
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="productLimit"
+                            className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1"
                           >
-                            <span
-                              className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
-                            />
-                          </div>
+                            Límite de Resultados (Defecto: 30)
+                          </Label>
+                          <Input
+                            id="productLimit"
+                            name="productLimit"
+                            type="number"
+                            min={1}
+                            max={50}
+                            value={productLimit}
+                            onChange={(e) => setProductLimit(Number(e.target.value))}
+                            className="h-12 border-stone-100 bg-white rounded-xl text-sm font-bold"
+                          />
                         </div>
-                      </label>
+
+                        {/* Switch: Incluir Agotados (Dummy for Test compatibility) */}
+                        <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
+                          <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                            Incluir Agotados
+                          </span>
+                          <div className="relative">
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              name="outOfStock"
+                              checked={includeOutOfStock}
+                              onChange={() => setIncludeOutOfStock(!includeOutOfStock)}
+                            />
+                            <div
+                              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${includeOutOfStock ? 'bg-emerald-500' : 'bg-stone-200'}`}
+                            >
+                              <span
+                                className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${includeOutOfStock ? 'translate-x-5' : 'translate-x-0'}`}
+                              />
+                            </div>
+                          </div>
+                        </label>
+
+                        {/* Switch: Coincidencia Exacta */}
+                        <label className="relative flex flex-col justify-center space-y-3 cursor-pointer group">
+                          <span className="text-[10px] font-black text-stone-500 uppercase tracking-widest ml-1">
+                            Coincidencia Exacta
+                          </span>
+                          <div className="relative">
+                            <input
+                              type="checkbox"
+                              className="sr-only"
+                              name="exactMatch"
+                              checked={exactMatch}
+                              onChange={() => setExactMatch(!exactMatch)}
+                            />
+                            <div
+                              className={`relative inline-flex h-6 w-11 shrink-0 items-center rounded-full border-2 border-transparent transition-colors ${exactMatch ? 'bg-emerald-500' : 'bg-stone-200'}`}
+                            >
+                              <span
+                                className={`pointer-events-none block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform ${exactMatch ? 'translate-x-5' : 'translate-x-0'}`}
+                              />
+                            </div>
+                          </div>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -582,7 +590,7 @@ const BenchmarkSearch = ({
                         htmlFor="catalogLimit"
                         className="text-[11px] font-black text-stone-700 uppercase tracking-widest ml-1"
                       >
-                        Límite de Productos (Máx. 50)
+                        Límite de Productos (Defecto: 30, Máx. 50)
                       </Label>
                       <Input
                         id="catalogLimit"

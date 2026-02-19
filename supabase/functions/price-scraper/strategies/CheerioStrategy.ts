@@ -14,14 +14,17 @@ import cheerio from 'https://esm.sh/cheerio@1.0.0-rc.12';
 export class CheerioStrategy implements ISearchStrategy {
   private config: any;
   private storeName: string;
+  private limit: number;
 
   /**
    * @param config - Configuración específica de la tienda (selectores, dominios).
    * @param storeName - Nombre identificador de la tienda.
+   * @param limit - Límite de resultados.
    */
-  constructor(config: any, storeName: string) {
+  constructor(config: any, storeName: string, limit: number = 20) {
     this.config = config;
     this.storeName = storeName;
+    this.limit = Math.min(Math.max(limit, 5), 50);
   }
 
   /**
@@ -62,7 +65,7 @@ export class CheerioStrategy implements ISearchStrategy {
       const products: ProductResult[] = [];
       const cards = $(this.config.selectors.productCard);
 
-      cards.slice(0, 15).each((_i: number, el: any) => {
+      cards.slice(0, this.limit).each((_i: number, el: any) => {
         try {
           const name = $(el).find(this.config.selectors.name).first().text().trim();
 

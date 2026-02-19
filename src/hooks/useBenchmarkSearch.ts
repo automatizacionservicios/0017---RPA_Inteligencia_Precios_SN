@@ -27,7 +27,8 @@ interface UseBenchmarkSearchProps {
     brand?: string,
     category?: string,
     productLimit?: number,
-    exactMatch?: boolean
+    exactMatch?: boolean,
+    includeOutOfStock?: boolean
   ) => void | Promise<void>;
   /** Pestaña de la interfaz de usuario activa actualmente */
   activeTab: string;
@@ -56,13 +57,14 @@ export const useBenchmarkSearch = ({
   const [brandName, setBrandName] = useState('');
   const [eanCode, setEanCode] = useState('');
   const [keywords, setKeywords] = useState('');
-  const [productLimit, setProductLimit] = useState<number>(10);
+  const [productLimit, setProductLimit] = useState<number>(30);
   const [exactMatch, setExactMatch] = useState(false);
+  const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
 
   // Estado del modo de catálogo de tienda
   const [selectedStoreForCatalog, setSelectedStoreForCatalog] = useState('');
   const [catalogCategory, setCatalogCategory] = useState('all');
-  const [catalogLimit, setCatalogLimit] = useState(50);
+  const [catalogLimit, setCatalogLimit] = useState(30);
 
   /**
    * Efecto para gestionar la consulta de búsqueda inicial desde la URL o navegación.
@@ -120,7 +122,8 @@ export const useBenchmarkSearch = ({
       brandName || undefined, // 10. brand
       undefined, // 11. category
       productLimit, // 12. productLimit
-      exactMatch // 13. exactMatch (added to payload)
+      exactMatch, // 13. exactMatch
+      includeOutOfStock // 14. includeOutOfStock
     );
   };
 
@@ -205,6 +208,8 @@ export const useBenchmarkSearch = ({
     setProductLimit,
     exactMatch,
     setExactMatch,
+    includeOutOfStock,
+    setIncludeOutOfStock,
     handleProductSearch,
     handleCatalogSearch,
   };
