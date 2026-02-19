@@ -1,8 +1,8 @@
 /**
  * TEST 02: Búsqueda por Palabra Clave
- * RESUMEN: Simula una búsqueda básica desde el Home y verifica la transición 
+ * RESUMEN: Simula una búsqueda básica desde el Home y verifica la transición
  * exitosa al Radar Referencial con visualización de resultados.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/02-basic-search.spec.ts
  */
 import { test, expect } from '@playwright/test';

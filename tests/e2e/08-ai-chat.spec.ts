@@ -1,8 +1,8 @@
 /**
  * TEST 08: Chat de Inteligencia (Gemini)
- * RESUMEN: Valida la apertura del asistente inteligente, el envío de mensajes 
+ * RESUMEN: Valida la apertura del asistente inteligente, el envío de mensajes
  * y la persistencia visual de la conversación dentro del contexto de búsqueda.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/08-ai-chat.spec.ts
  */
 import { test, expect } from '@playwright/test';
@@ -27,9 +27,7 @@ test.describe('AI Assistant (Gemini) Chat', () => {
     await chatButton.click({ force: true });
 
     // 2. Verificar que se abra el panel lateral o diálogo del chat
-    await expect(
-      page.getByText(/asistente inteligente/i).or(page.getByText(/gemini/i))
-    ).toBeVisible();
+    await expect(page.getByText('Asistente Gemini').first()).toBeVisible();
 
     // 3. Escribir un mensaje
     const input = page

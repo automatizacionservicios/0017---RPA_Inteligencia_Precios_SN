@@ -1,8 +1,8 @@
 /**
  * TEST 06: Auditoría Masiva (Pareto)
- * RESUMEN: Valida el flujo completo del módulo Pareto, desde el ingreso masivo 
+ * RESUMEN: Valida el flujo completo del módulo Pareto, desde el ingreso masivo
  * de EANs hasta la ejecución de la auditoría y visualización de resultados agrupados.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/06-pareto-audit.spec.ts
  */
 import { test, expect } from '@playwright/test';

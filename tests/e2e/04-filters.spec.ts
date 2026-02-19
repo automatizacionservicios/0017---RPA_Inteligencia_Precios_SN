@@ -1,8 +1,8 @@
 /**
  * TEST 04: Refinamiento Inteligente (Filtros)
- * RESUMEN: Prueba la capacidad de filtrar resultados por tienda y rango de precios, 
+ * RESUMEN: Prueba la capacidad de filtrar resultados por tienda y rango de precios,
  * asegurando que la tabla de resultados refleje correctamente los criterios del usuario.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/04-filters.spec.ts
  */
 import { test, expect } from '@playwright/test';
@@ -29,8 +29,14 @@ test.describe('Result Filtering', () => {
 
     // 4. FILTRO DE TIENDA
     // Localizamos la sección de canales
-    const channelsSection = page.locator('div').filter({ hasText: /^Canales \/ Tiendas/i }).first();
-    const firstStoreItem = channelsSection.locator('..').locator('.custom-scrollbar div.cursor-pointer').first();
+    const channelsSection = page
+      .locator('div')
+      .filter({ hasText: /^Canales \/ Tiendas/i })
+      .first();
+    const firstStoreItem = channelsSection
+      .locator('..')
+      .locator('.custom-scrollbar div.cursor-pointer')
+      .first();
     const storeNameElement = firstStoreItem.locator('span').first();
     const storeName = await storeNameElement.textContent();
 
@@ -40,14 +46,21 @@ test.describe('Result Filtering', () => {
       await page.waitForTimeout(1500);
 
       const visibleStores = await page.locator('table tbody tr td:first-child').allTextContents();
-      const stillVisible = visibleStores.some(s => s.trim().toUpperCase() === storeName.trim().toUpperCase());
+      const stillVisible = visibleStores.some(
+        (s) => s.trim().toUpperCase() === storeName.trim().toUpperCase()
+      );
       expect(stillVisible).toBeFalsy();
     }
 
     // 5. FILTRO DE PRECIO
     // Activar inputs de precisión (específicamente en la sección de Rango de Inversión)
-    const investmentSection = page.locator('div').filter({ hasText: /^Rango de Inversión$/i }).first();
-    const precisionBtn = investmentSection.locator('..').getByRole('button', { name: /ajuste preciso/i });
+    const investmentSection = page
+      .locator('div')
+      .filter({ hasText: /^Rango de Inversión$/i })
+      .first();
+    const precisionBtn = investmentSection
+      .locator('..')
+      .getByRole('button', { name: /ajuste preciso/i });
     await precisionBtn.click();
 
     // Llenar precio mínimo (ej: 5000)

@@ -1,19 +1,20 @@
 /**
  * TEST 03: Opciones de Búsqueda Avanzada
- * RESUMEN: Valida que los filtros de "Límite de Resultados", "Incluir Agotados" 
+ * RESUMEN: Valida que los filtros de "Límite de Resultados", "Incluir Agotados"
  * y "Coincidencia Exacta" funcionen correctamente en el Radar Referencial.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/03-advanced-search.spec.ts
  */
 import { test, expect } from '@playwright/test';
 
 test.describe('Advanced Search Functionality', () => {
-
   test.beforeEach(async ({ page }) => {
     // 1. Ir directamente al módulo de Radar Referencial
     await page.goto('/radar-referencial');
     // Asegurarse de que el buscador esté cargado (Buscamos el título principal)
-    await expect(page.locator('h1', { hasText: /Radar Referencial/i }).first()).toBeVisible({ timeout: 15000 });
+    await expect(page.locator('h1', { hasText: /Radar Referencial/i }).first()).toBeVisible({
+      timeout: 15000,
+    });
     // Usamos first() para evitar violaciones de strict mode si hay múltiples coincidencias
     await expect(page.getByRole('tab', { name: /Modo/i }).first()).toBeVisible({ timeout: 10000 });
   });
@@ -85,5 +86,4 @@ test.describe('Advanced Search Functionality', () => {
 
     await expect(page.getByText(/Radar Referencial v2.0/i)).toBeVisible({ timeout: 60000 });
   });
-
 });

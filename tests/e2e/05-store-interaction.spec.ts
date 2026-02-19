@@ -2,12 +2,14 @@
  * TEST 05: Comparativa en Tiempo Real (Aislamiento Funcional)
  * RESUMEN: Verifica que la selección de una tienda única restringe los resultados.
  * Sigue el flujo manual: Buscar -> Cerrar Modal -> Refinar Búsqueda -> Cambiar Tienda -> Buscar.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/05-store-interaction.spec.ts
  */
 import { test, expect } from '@playwright/test';
 
-test('User can search and isolate results by specific store URLs following the manual refine flow', async ({ page }) => {
+test('User can search and isolate results by specific store URLs following the manual refine flow', async ({
+  page,
+}) => {
   await page.goto('/radar-referencial');
 
   // Helper para realizar la primera búsqueda o refinarla
@@ -31,7 +33,7 @@ test('User can search and isolate results by specific store URLs following the m
       // En la primera búsqueda, resetear y seleccionar
       const toggleAllBtn = page.getByRole('button', { name: /Alternar Selección/i });
       const exitoBtn = page.locator('button#exito');
-      const isExitoChecked = await exitoBtn.getAttribute('data-state') === 'checked';
+      const isExitoChecked = (await exitoBtn.getAttribute('data-state')) === 'checked';
 
       if (isExitoChecked) {
         console.log('Resetting selection to start clean...');
@@ -48,11 +50,11 @@ test('User can search and isolate results by specific store URLs following the m
       const exitoBtn = page.locator('button#exito');
       const targetStoreBtn = page.locator(`button#${storeId}`);
 
-      if (await exitoBtn.getAttribute('data-state') === 'checked') {
+      if ((await exitoBtn.getAttribute('data-state')) === 'checked') {
         await exitoBtn.click();
       }
 
-      if (await targetStoreBtn.getAttribute('data-state') !== 'checked') {
+      if ((await targetStoreBtn.getAttribute('data-state')) !== 'checked') {
         await targetStoreBtn.click();
       }
 
@@ -72,6 +74,7 @@ test('User can search and isolate results by specific store URLs following the m
 
     // 5. Verificar primer resultado en la columna 6 (Enlace)
     const firstLink = page.locator('table tbody tr td:nth-child(6) a').first();
+    // @ts-expect-error - custom matcher
     await expect(firstLink).toBeBufferedVisible(30000); // Helper personalizado o simplemente visible
 
     const href = await firstLink.getAttribute('href');
@@ -103,11 +106,11 @@ test('User can search and isolate results by specific store URLs following the m
 });
 
 // Helper simple para esperar visibilidad sin fallar prematuramente si el DOM está cargando
-async function isBufferedVisible(locator, timeout) {
+async function _isBufferedVisible(locator: import('@playwright/test').Locator, timeout: number) {
   try {
     await locator.waitFor({ state: 'visible', timeout });
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }
@@ -117,8 +120,8 @@ expect.extend({
     try {
       await locator.waitFor({ state: 'visible', timeout });
       return { pass: true, message: () => 'Element is visible' };
-    } catch (e) {
+    } catch {
       return { pass: false, message: () => `Element not visible after ${timeout}ms` };
     }
-  }
+  },
 });

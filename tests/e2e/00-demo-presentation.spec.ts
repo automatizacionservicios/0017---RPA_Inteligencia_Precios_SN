@@ -2,7 +2,7 @@
  * TEST 00: Demostración de Funcionalidades SN v2.0
  * RESUMEN: Suite personalizada para demostración rápida que valida la eliminación de ciudades,
  * búsqueda por nombre con escudo de timeout y auditoría Pareto (masivos) desde el Home.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/00-demo-presentation.spec.ts
  */
 import { test, expect } from '@playwright/test';

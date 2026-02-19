@@ -251,13 +251,24 @@ const BenchmarkSearch = ({
                             id="ean"
                             placeholder="7701234567890"
                             value={eanCode}
-                            onChange={(e) => setEanCode(e.target.value)}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (/^\d*$/.test(val)) {
+                                setEanCode(val);
+                              }
+                            }}
                             className="h-16 border-stone-100 bg-white/80 focus-visible:ring-emerald-500/20 focus-visible:border-emerald-500 transition-all font-mono text-lg font-black text-stone-800 px-6 rounded-2xl shadow-sm hover:border-stone-200"
                           />
                         </div>
-                        <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest ml-1 animate-pulse">
-                          * Este modo garantiza la mayor precisión quirúrgica en todos los canales.
-                        </p>
+                        <div className="flex items-center justify-between px-1">
+                          <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest animate-pulse">
+                            * Este modo garantiza la mayor precisión quirúrgica en todos los
+                            canales.
+                          </p>
+                          <p className="text-[9px] font-black text-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg">
+                            Solo números admitidos
+                          </p>
+                        </div>
                       </div>
                     </TabsContent>
 

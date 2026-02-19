@@ -1,8 +1,8 @@
 /**
  * TEST 01: Bases y Navegación
- * RESUMEN: Valida que la aplicación carga correctamente y permite la navegación 
+ * RESUMEN: Valida que la aplicación carga correctamente y permite la navegación
  * fluida entre los módulos principales (Benchmark, Radar, Pareto, Stock).
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/01-navigation.spec.ts
  */
 import { test, expect } from '@playwright/test';

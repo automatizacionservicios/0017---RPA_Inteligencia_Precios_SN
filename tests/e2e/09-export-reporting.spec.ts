@@ -1,8 +1,8 @@
 /**
  * TEST 09: Reportes y Exportación
- * RESUMEN: Valida que la funcionalidad de exportación a Excel y PDF no genere 
+ * RESUMEN: Valida que la funcionalidad de exportación a Excel y PDF no genere
  * errores de consola y se active correctamente tras una auditoría masiva.
- * 
+ *
  * EJECUCIÓN: npx playwright test tests/e2e/09-export-reporting.spec.ts
  */
 import { test, expect } from '@playwright/test';
