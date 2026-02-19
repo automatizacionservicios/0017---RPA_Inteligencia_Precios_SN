@@ -1,3 +1,10 @@
+/**
+ * TEST 10: Experiencia de Usuario Móvil
+ * RESUMEN: Simula un dispositivo móvil para verificar que la interfaz sea 
+ * responsiva, el menú hamburguesa funcione y los elementos se adapten al viewport.
+ * 
+ * EJECUCIÓN: npx playwright test tests/e2e/10-mobile-responsive.spec.ts
+ */
 import { test, expect } from '@playwright/test';
 
 test.use({ viewport: { width: 375, height: 812 } }); // iPhone 13 Mini/Safe standard viewport

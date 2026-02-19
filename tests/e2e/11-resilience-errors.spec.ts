@@ -1,3 +1,10 @@
+/**
+ * TEST 11: Resiliencia (Sad Paths)
+ * RESUMEN: Prueba el manejo de errores del sistema ante entradas inválidas 
+ * o búsquedas sin resultados, asegurando un feedback claro al usuario.
+ * 
+ * EJECUCIÓN: npx playwright test tests/e2e/11-resilience-errors.spec.ts
+ */
 import { test, expect } from '@playwright/test';
 
 test.describe('Sad Paths & Error Handling', () => {

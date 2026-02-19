@@ -1,3 +1,10 @@
+/**
+ * TEST 07: Módulo de Inventario (Stock)
+ * RESUMEN: Prueba el funcionamiento del tablero de auditoría de stock, 
+ * verificando la presencia de tablas de disponibilidad y filtros de faltantes.
+ * 
+ * EJECUCIÓN: npx playwright test tests/e2e/07-stock-management.spec.ts
+ */
 import { test, expect } from '@playwright/test';
 
 test.describe('Stock Audit Module', () => {
